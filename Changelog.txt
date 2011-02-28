@@ -62,3 +62,8 @@ mode on, -N turns it off, etc. This should be used to overwrite configuration
 defaults.
 * CTRL-C is caught. Script just terminates without the python exception
 message.
+
+2011/02/28 
+* everything under git control now
+* finds flac files now as well
+* from here on, read git log
