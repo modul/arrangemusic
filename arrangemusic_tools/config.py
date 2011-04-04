@@ -59,7 +59,7 @@ class Configuration(object):
 			self.trackstyle  = "{track}."
 			self.albumstyle  = "{yearstyle}{album}"
 			self.yearstyle   = "{year}-"
-			self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}.{extension}"
+			self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}{extension}"
 			self.initial_num = "first"
 			
 
@@ -103,35 +103,37 @@ class Configuration(object):
 		versn = "%prog "+version
 		
 		self.parser = optparse.OptionParser(usage=usage, version=versn)
+		self.parser.add_option("-f", "--configfile", help="use another configuration",
+		 metavar='FILE', dest="conf", default='')
 		
 		actiongroup = optparse.OptionGroup(self.parser, "Actions/Interactions")
 		
 		actiongroup.add_option("-i", "--interactive", 
-		  help="Ask before an action is taken.", 
+		  help="ask before doing anything", 
 		  action="store_true", dest="ask_before", default=self.ask_before)
 		actiongroup.add_option("-I", "--non-interactive", 
-		  help="Don't ask.",
+		  help="don't ask",
 		  action="store_false", dest="ask_before", default=self.ask_before)
 		actiongroup.add_option("-n", "--dry-run", 
-		 help="Just pretend actions.",
+		 help="just pretend actions",
 		 action="store_false", dest="do_it", default=self.do_it)
 		actiongroup.add_option("-d", "--do-it", 
-		 help="Don't pretend actions.",
+		 help="don't pretend actions",
 		 action="store_true", dest="do_it", default=self.do_it)
 		actiongroup.add_option("-v", "--verbose", 
-		 help="Print more information.",
+		 help="print more information",
 		 action="store_true", dest="verbose", default=self.verbose)
 		actiongroup.add_option("-q", "--quiet", 
-		 help="Print less information.",
+		 help="print less information",
 		 action="store_false", dest="verbose", default=self.verbose)
 		
 		targetgroup = optparse.OptionGroup(self.parser, "Target files")
 
 		targetgroup.add_option("-m", "--move", 
-		 help="Move files (remove source files).",
+		 help="move files (remove source files)",
 		 action="store_true", dest="use_moving", default=self.use_moving)
 		targetgroup.add_option("-c", "--copy", 
-		 help="Copy files.",
+		 help="copy files",
 		 action="store_false", dest="use_moving", default=self.use_moving)
 		targetgroup.add_option("-t", "--target", 
 		 help="move/copy files to DIRECTORY",
@@ -140,10 +142,10 @@ class Configuration(object):
 		patterngroup = optparse.OptionGroup(self.parser, "Patterns")
 		
 		patterngroup.add_option("-1", "--singleartist", 
-		 help="Use single artist pattern.",
+		 help="use single artist pattern",
 		 action="store_false", dest="multiartist", default=self.multiartist)
 		patterngroup.add_option("-2", "--multiartist", 
-		 help="Use multi artist pattern.",
+		 help="use multi artist pattern",
 		 action="store_true", dest="multiartist", default=self.multiartist)
 		 
 		self.parser.add_option_group(actiongroup)
@@ -164,15 +166,16 @@ class Configuration(object):
 			else:
 				cfg = self.cfg_files[0]
 		
-		epilog += "{ask} {dry} {move} {multi} {target}  "
-		epilog += "The file pattern is: {pattern}"	
+		epilog += "{verbose}{ask}{dry}{move}{multi} Target directory: {target}  "
+		epilog += "Rename pattern: {pattern}"	
 		
 		fmt = {'cfg': cfg,
-		'ask': self.ask_before and '-i' or '-I',
-		'dry': self.do_it and '-d' or '-n',
-		'move': self.use_moving and '-m' or '-c',
-		'multi': self.multiartist and '-2' or '-1',
-		'target': self.target_dir and '-t '+self.target_dir or '',
+		'verbose': self.verbose and 'verbose, ' or '',
+		'ask': self.ask_before and 'interactive, ' or '',
+		'dry': self.do_it and 'dry-run, ' or '',
+		'move': self.use_moving and 'move files, ' or '',
+		'multi': self.multiartist and 'multiartist.' or '',
+		'target': self.target_dir or './',
 		'pattern': self.newpath
 		}
 		
@@ -196,6 +199,9 @@ class Configuration(object):
 		
 		(options, args) = self.parser.parse_args(argv)
 		
+		if options.conf:
+			self.cfg_files.extend(self.cfg.read(options.conf))
+			
 		self.target_dir  = options.target_dir
 		self.ask_before  = options.ask_before
 		self.do_it       = options.do_it
