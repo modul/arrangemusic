@@ -1,7 +1,9 @@
+ # -*- coding: utf8 -*-
  #
- # Configuration for Arrangemusic
+ # Arrangemusic - config.py
  # 
- # Loading, commandline parsing, container class and internal defaults.
+ # Configuration file loading and commandline parsing is done here. 
+ # Internal defaults and options are also here. 
  #
  # author: Remo Giermann <mo@liberejo.de>
  # created: 2010/04/04

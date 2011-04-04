@@ -1,3 +1,16 @@
+# -*- coding: utf8 -*-
+#
+# Arrangemusic - processing.py
+#
+# Everything that’s needed to process tags and files is here.
+# Pattern substitution, path rewriting, file moving, file locating, tag loading etc.
+#
+# author: Remo Giermann <mo@liberejo.de>
+# created: 2011/04/04
+#
+
+
+
 import os
 import config
 
@@ -198,11 +211,6 @@ def replace(s, replacements):
 def file_listing(directory, extensions):
 	"""
 	Return a listing of files with 'extensions'.
-	
-	>>> exts = ['py']
-	>>> listing = file_listing('.', exts)
-	>>> "./arrangemusic.py" in listing
-	True
 	"""
 	results = []
 	for dirpath, dirs, files in os.walk(directory):
