@@ -8,7 +8,7 @@ class TagInfo(object):
 	"""
 	
 	def __init__(self, tagfileref):
-		self.filename = tagfileref.file().name()
+		self.filename  = tagfileref.file().name()
 		self.extension = get_extension(self.filename, config.file_extensions)
 		
 		tag = tagfileref.tag()
@@ -51,6 +51,7 @@ class TagInfo(object):
 		else:
 			self.year = ''
 
+
 def get_extension(filename, extensions):
 	"""
 	Checks if 'filename' has one of 'extensions' and returns it.
@@ -70,6 +71,14 @@ def get_extension(filename, extensions):
 
 		
 def file_listing(directory, extensions):
+	"""
+	Return a listing of files with 'extensions'.
+	
+	>>> exts = ['py']
+	>>> listing = file_listing('.', exts)
+	>>> "./arrangemusic.py" in listing
+	True
+	"""
 	results = []
 	for dirpath, dirs, files in os.walk(directory):
 		for f in files:
@@ -78,11 +87,11 @@ def file_listing(directory, extensions):
 	return results
 
 
-def clean(s, replacements):
+def substitute(s, replacements):
 	"""
-	Removes all 'kill'-characters and replaces them
+	Makes substitutions according to 'replacements' dictionary.
 	
-	>>> clean("Hello World!", {' ': '-'})
+	>>> substitute("Hello World!", {' ': '-'})
 	'Hello-World!'
 	
 	"""
@@ -116,12 +125,17 @@ def get_first(s, matches):
 
 
 def process_file(source, options):
+	"""
+	Take TagInfo instance 'source', perform pattern substitutions and return
+	a new path for that source.
+	"""
+	
 	article, artist_noart = get_first(source.artist, options.common_articles)
 	
-	source.artist = clean(source.artist, options.replacements)
-	source.title  = clean(source.title, options.replacements)
-	source.genre  = clean(source.genre, options.replacements)
-	source.album  = clean(source.album, options.replacements)
+	source.artist = substitute(source.artist, options.replacements)
+	source.title  = substitute(source.title, options.replacements)
+	source.genre  = substitute(source.genre, options.replacements)
+	source.album  = substitute(source.album, options.replacements)
     
 	if source.track:
 		trackstyle = options.trackstyle
@@ -154,12 +168,23 @@ def process_file(source, options):
 		else:
 			first_letter = c
 
-	escapes   = ('%a','%B','%b','%s','%T','%t','%g','%Y','%y','%I','%e')   # replace the escape things with data
-	replcmnts = (source.artist, albumstyle, source.album, source.title, trackstyle, source.track, source.genre, yearstyle, source.year, first_letter, source.extension)
-
-	path = options.newpath
-
-	for i in range(len(escapes)):
-		path = path.replace(escapes[i], replcmnts[i])
+	
+	fmt = {
+		'artist': source.artist.encode('utf8'),
+		'album':  source.album.encode('utf8'),
+		'title':  source.title.encode('utf8'),
+		'track':  source.track,
+		'genre':  source.genre.encode('utf8'),
+		'year' :   source.year,
+		'initial'   : first_letter.encode('utf8'),
+		'extension' : '.'+source.extension
+	}
+	
+	fmt.update({'yearstyle' :  yearstyle.format(**fmt)})
+	fmt.update({'trackstyle': trackstyle.format(**fmt)})	
+	fmt.update({'albumstyle': albumstyle.format(**fmt)})
+	
+	path = options.newpath.format(**fmt)
 
 	return os.path.join(options.target_dir, path)
+

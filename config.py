@@ -32,14 +32,15 @@ class Configuration(object):
 	'%a/%B/%T%s.%e'
 	"""
 	
-	def __init__(self, default=''):
+	def __init__(self, cfg=''):
 		"""
 		Load configuration and setup attributes.
 		"""
 		self.cfg = ConfigParser()
-		read = self.cfg.read([default, default_cfg, user_cfg])
+		read = self.cfg.read([cfg, default_cfg, user_cfg])
 		
 		if len(read) == 0:
+			self.verbose      = False
 			self.do_it        = False
 			self.use_moving   = False
 			self.ask_before   = False
@@ -61,6 +62,7 @@ class Configuration(object):
 			
 
 		else:
+			self.verbose      = self.cfg.get("commandline", "verbose")
 			self.do_it        = not self.cfg.getboolean("commandline", "pretend")
 			self.use_moving   = self.cfg.getboolean("commandline", "move")
 			self.ask_before   = self.cfg.getboolean("commandline", "interactive")
@@ -115,6 +117,12 @@ class Configuration(object):
 		actiongroup.add_option("-d", "--do-it", 
 		 help="Don't pretend actions.",
 		 action="store_true", dest="do_it", default=self.do_it)
+		actiongroup.add_option("-v", "--verbose", 
+		 help="Print more information.",
+		 action="store_true", dest="verbose", default=self.verbose)
+		actiongroup.add_option("-q", "--quiet", 
+		 help="Print less information.",
+		 action="store_false", dest="verbose", default=self.verbose)
 		
 		targetgroup = optparse.OptionGroup(self.parser, "Target files")
 
