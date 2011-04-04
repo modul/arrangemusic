@@ -26,6 +26,10 @@ class Configuration(object):
 	>>> options = Configuration("default.cfg")
 	>>> options.cfg_files == ["default.cfg"]
 	True
+	
+	>>> options = Configuration()
+	>>> options.newpath
+	'%a/%B/%T%s.%e'
 	"""
 	
 	def __init__(self, default=''):
@@ -46,6 +50,15 @@ class Configuration(object):
 			self.unk_artist   = "Unknown Artist"
 			self.unk_title    = "Unknown Title"
 			self.unk_genre    = "No genre"
+			
+			self.ignore_articles = False
+			self.common_articles = ['The']
+			self.trackstyle  = "%t."
+			self.albumstyle  = "%Y%b"
+			self.yearstyle   = "%y-"
+			self.newpath     = "%a/%B/%T%s.%e"
+			self.initial_num = "first"
+			
 
 		else:
 			self.do_it        = not self.cfg.getboolean("commandline", "pretend")
@@ -59,6 +72,19 @@ class Configuration(object):
 			self.unk_title    = self.cfg.get("replacements", "unknown_title")
 			self.unk_genre    = self.cfg.get("replacements", "unknown_genre")
 			
+			if self.multiartist is True:
+				pattern = "multiartist"
+			else:
+				pattern = "singleartist"
+				
+			self.ignore_articles = self.cfg.getboolean(pattern, "ignore_articles")
+			self.common_articles = self.cfg.get(pattern, "common_articles").split(',')
+			self.trackstyle  = self.cfg.get(pattern, "trackstyle")
+			self.albumstyle  = self.cfg.get(pattern, "albumstyle")
+			self.yearstyle   = self.cfg.get(pattern, "yearstyle")
+			self.newpath     = self.cfg.get(pattern, "new_path")
+			self.initial_num = self.cfg.get(pattern, "initial_of_number")
+				
 				
 		self.cfg_files = read
 		self.files = []
@@ -120,7 +146,8 @@ class Configuration(object):
 			epilog = "No configuration defaults for commandline options."
 		else:
 			epilog  = "Currently, the default options from {cfg} are: \n"
-			epilog += "{ask} {dry} {move} {multi} {target}"
+			epilog += "{ask} {dry} {move} {multi} {target} \n"
+			epilog += "The rewrite pattern is: {pattern}\n"
 			if user_cfg in self.cfg_files:
 				cfg = user_cfg
 			elif default_cfg in self.cfg_files:
@@ -135,6 +162,7 @@ class Configuration(object):
 			'move': self.use_moving and '-m' or '-c',
 			'multi': self.multiartist and '-2' or '-1',
 			'target': self.target_dir and '-t '+self.target_dir or '',
+			'pattern': self.newpath
 			}
 			
 			epilog = epilog.format(**fmt)
