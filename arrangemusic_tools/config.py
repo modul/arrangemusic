@@ -56,10 +56,10 @@ class Configuration(object):
 			
 			self.ignore_articles = False
 			self.common_articles = ['The']
-			self.trackstyle  = "%t."
-			self.albumstyle  = "%Y%b"
-			self.yearstyle   = "%y-"
-			self.newpath     = "%a/%B/%T%s.%e"
+			self.trackstyle  = "{track}."
+			self.albumstyle  = "{yearstyle}{album}"
+			self.yearstyle   = "{year}-"
+			self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}.{extension}"
 			self.initial_num = "first"
 			
 
@@ -152,29 +152,31 @@ class Configuration(object):
 		
 		
 		if len(self.cfg_files) == 0:
-			epilog = "No configuration defaults for commandline options."
+			epilog = "No configuration file found. Default options: "
+			cfg = ''
 		else:
-			epilog  = "Currently, the default options from {cfg} are: \n"
-			epilog += "{ask} {dry} {move} {multi} {target} \n"
-			epilog += "The rewrite pattern is: {pattern}\n"
+			epilog  = "The default options from {cfg} are: "
+
 			if user_cfg in self.cfg_files:
 				cfg = user_cfg
 			elif default_cfg in self.cfg_files:
 				cfg = default_cfg
 			else:
 				cfg = self.cfg_files[0]
-			
 		
-			fmt = {'cfg': cfg,
-			'ask': self.ask_before and '-i' or '-I',
-			'dry': self.do_it and '-d' or '-n',
-			'move': self.use_moving and '-m' or '-c',
-			'multi': self.multiartist and '-2' or '-1',
-			'target': self.target_dir and '-t '+self.target_dir or '',
-			'pattern': self.newpath
-			}
-			
-			epilog = epilog.format(**fmt)
+		epilog += "{ask} {dry} {move} {multi} {target}  "
+		epilog += "The file pattern is: {pattern}"	
+		
+		fmt = {'cfg': cfg,
+		'ask': self.ask_before and '-i' or '-I',
+		'dry': self.do_it and '-d' or '-n',
+		'move': self.use_moving and '-m' or '-c',
+		'multi': self.multiartist and '-2' or '-1',
+		'target': self.target_dir and '-t '+self.target_dir or '',
+		'pattern': self.newpath
+		}
+		
+		epilog = epilog.format(**fmt)
 		
 		
 		self.parser.epilog = epilog
