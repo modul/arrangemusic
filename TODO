@@ -1,5 +1,6 @@
 2011/04/05
 - patterns überarbeiten…
+- use {artist}, {title} and str.format()!!
 
 2010/07/09
 - clean up help text
