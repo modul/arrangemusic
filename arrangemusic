@@ -265,15 +265,15 @@ if not myfiles:
 print "\033[33m"
 
 if not __do_it:
-    print "Pretending actions"
+    print "Pretending actions (use -N to really do it)"
 if __ask_before: 
-    print "Working interactively"
+    print "Working interactively (use -I to switch to non-interactive)"
 if __verbose:
-    print "Verbose operation"
+    print "Verbose operation (use -V to switch to non-verbose)" 
 if __use_moving:
-    print "Removing source files"
+    print "Removing source files (use -M to keep them)"
 if __multiartist:
-    print "Using multiartist pattern"
+    print "Using multiartist pattern (use -1 to overwrite)"
 
 print "Target directory:", target_dir
 
