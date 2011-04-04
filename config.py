@@ -50,7 +50,7 @@ class Configuration(object):
 			self.replacements = {}
 			self.unk_artist   = "Unknown Artist"
 			self.unk_title    = "Unknown Title"
-			self.unk_genre    = "No genre"
+			self.no_genre     = "No genre"
 			
 			self.ignore_articles = False
 			self.common_articles = ['The']
@@ -72,7 +72,7 @@ class Configuration(object):
 			self.replacements = eval(self.cfg.get("replacements", "replace"))
 			self.unk_artist   = self.cfg.get("replacements", "unknown_artist")
 			self.unk_title    = self.cfg.get("replacements", "unknown_title")
-			self.unk_genre    = self.cfg.get("replacements", "unknown_genre")
+			self.no_genre     = self.cfg.get("replacements", "no_genre")
 			
 			if self.multiartist is True:
 				pattern = "multiartist"
