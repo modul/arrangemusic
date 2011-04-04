@@ -4,17 +4,18 @@ import config
 
 class TagInfo(object):
 	"""
-	Loads tag information and prepares it.
+	Loads tag information and prepares and processes it.
 	"""
 	
-	def __init__(self, tagfileref):
+	def __init__(self, tagfileref, options):
+		self.options   = options
 		self.filename  = tagfileref.file().name()
 		self.extension = get_extension(self.filename, config.file_extensions)
 		
 		tag = tagfileref.tag()
-		self.artist = tag.artist or "Unknown Artist"
-		self.title  = tag.title or "Unknown Title"
-		self.genre  = tag.genre or "No Genre"
+		self.artist = tag.artist or options.unk_artist
+		self.title  = tag.title  or options.unk_title
+		self.genre  = tag.genre  or options.no_genre
 		self.album  = tag.album 
 		self.track  = tag.track
 		self.year   = tag.year
@@ -46,59 +47,97 @@ class TagInfo(object):
 		else:
 			self.track = ''
 			
-		if self.year > 0:
-			self.year = str(self.year)
-		else:
+		if self.year <= 0:
 			self.year = ''
-
-
-def get_extension(filename, extensions):
-	"""
-	Checks if 'filename' has one of 'extensions' and returns it.
+		
 	
-	>>> exts = ['mp3', 'flac']
-	>>> get_extension("test.mp3", exts)
-	'mp3'
-	>>> get_extension("test.flac", exts)
-	'flac'
-	>>> get_extension("test.py", exts)
-	''
-	"""
-	for ext in extensions:
-		if filename[-len(ext):].lower() == ext.lower():
-			return ext
-	return ''
+		self.article, self.artist_noarticle = get_first(self.artist, options.common_articles)
+		if options.ignore_articles:
+			self.first_letter = self.artist_noarticle[0]
+		else:
+			self.first_letter = self.artist[0]
 
 		
-def file_listing(directory, extensions):
-	"""
-	Return a listing of files with 'extensions'.
+		if self.first_letter.isdigit():
+			if option.initial_num == "first":
+				pass
+			elif option.initial_num == "whole":
+				sp = self.artist_noarticle.split()
+				self.first_letter = sp[0]
+			else:
+				self.first_letter = c
 	
-	>>> exts = ['py']
-	>>> listing = file_listing('.', exts)
-	>>> "./arrangemusic.py" in listing
-	True
-	"""
-	results = []
-	for dirpath, dirs, files in os.walk(directory):
-		for f in files:
-			if get_extension(f, extensions):
-				results.append(os.path.join(dirpath, f))
-	return results
-
-
-def substitute(s, replacements):
-	"""
-	Makes substitutions according to 'replacements' dictionary.
 	
-	>>> substitute("Hello World!", {' ': '-'})
-	'Hello-World!'
+	def makePath(self):
+		"""
+		Perform pattern substitutions and construct a new file path.
+		"""
 	
-	"""
-	for key, value in replacements.items():
-		s  = s.replace(key, value)
-	return s 
+		artist = replace(self.artist, self.options.replacements)
+		title  = replace(self.title, self.options.replacements)
+		genre  = replace(self.genre, self.options.replacements)
+		album  = replace(self.album, self.options.replacements)
+		
+		if self.track:
+			trackstyle = self.options.trackstyle
+		else:
+			trackstyle = ''
 
+		if self.year:
+			yearstyle = self.options.yearstyle
+		else:
+			yearstyle = ''
+
+		if self.album:
+			albumstyle = self.options.albumstyle
+		else:
+			albumstyle = ''
+
+		
+		fmt = {
+			'artist': artist.encode('utf8'),
+			'album':  album.encode('utf8'),
+			'title':  title.encode('utf8'),
+			'track':  self.track,
+			'genre':  genre.encode('utf8'),
+			'year' :  self.year,
+			'initial'  : self.first_letter.encode('utf8'),
+			'extension': '.'+self.extension
+		}
+		
+		fmt.update({'yearstyle' :  yearstyle.format(**fmt)})
+		fmt.update({'trackstyle': trackstyle.format(**fmt)})	
+		fmt.update({'albumstyle': albumstyle.format(**fmt)})
+		
+		path = self.options.newpath.format(**fmt)
+
+		return path
+		
+		
+	def print_changes(self):
+		"""
+		Print information about patterns and path rewriting.
+		"""
+		options = self.options
+		target  = self.makePath()
+		
+		if options.verbose:	
+			print "FILE:", self.filename, "\n"
+			print "FILE PATTERN  :", options.newpath
+			print "TRACK PATTERN :", options.trackstyle
+			print "YEAR PATTERN  :", options.yearstyle
+			print "ALBUM PATTERN  :", options.albumstyle
+			print
+			print "ARTIST : %s -> %s" % (self.old_artist, self.artist)
+			print "ALBUM  : %s -> %s" % (self.old_album, self.album)
+			print "TITLE  : %s -> %s" % (self.old_title, self.title)
+			print "GENRE  : %s -> %s" % (self.old_genre, self.genre)
+			print "TRACK  :", self.track
+			print "TARGET :", options.target_dir
+			print "DIR    :", os.path.dirname(target)
+			print "FILE   : %s \n" % (os.path.basename(target))
+		
+		
 
 def get_first(s, matches):
 	"""
@@ -121,70 +160,58 @@ def get_first(s, matches):
 			return (sp[0], ' '.join(sp[1:]))
 	
 	return ('', s)
-		
 
 
-def process_file(source, options):
+def get_extension(filename, extensions):
 	"""
-	Take TagInfo instance 'source', perform pattern substitutions and return
-	a new path for that source.
+	Checks if 'filename' has one of 'extensions' and returns it.
+	
+	>>> exts = ['mp3', 'flac']
+	>>> get_extension("test.mp3", exts)
+	'mp3'
+	>>> get_extension("test.flac", exts)
+	'flac'
+	>>> get_extension("test.py", exts)
+	''
 	"""
+	for ext in extensions:
+		if filename[-len(ext):].lower() == ext.lower():
+			return ext
+	return ''
+
+
+def replace(s, replacements):
+	"""
+	Makes substitutions according to 'replacements' dictionary.
 	
-	article, artist_noart = get_first(source.artist, options.common_articles)
+	>>> replace("Hello World!", {' ': '-'})
+	'Hello-World!'
 	
-	source.artist = substitute(source.artist, options.replacements)
-	source.title  = substitute(source.title, options.replacements)
-	source.genre  = substitute(source.genre, options.replacements)
-	source.album  = substitute(source.album, options.replacements)
-    
-	if source.track:
-		trackstyle = options.trackstyle
-	else:
-		trackstyle = ''
+	"""
+	for key, value in replacements.items():
+		s  = s.replace(key, value)
+	return s 
 
-	if source.year:
-		yearstyle = options.yearstyle
-	else:
-		yearstyle = ''
 
-	if source.album:
-		albumstyle = options.albumstyle
-	else:
-		albumstyle = ''
-
-	# Do the article ignoring if needed:
-	if options.ignore_articles:
-		first_letter = artist_noart[0]
-	else:
-		first_letter = source.artist[0]
-
+def file_listing(directory, extensions):
+	"""
+	Return a listing of files with 'extensions'.
 	
-	if first_letter.isdigit():
-		if option.initial_num == "first":
-			pass
-		elif option.initial_num == "whole":
-			sp = artist_noart.split()
-			first_letter = sp[0]
-		else:
-			first_letter = c
+	>>> exts = ['py']
+	>>> listing = file_listing('.', exts)
+	>>> "./arrangemusic.py" in listing
+	True
+	"""
+	results = []
+	for dirpath, dirs, files in os.walk(directory):
+		for f in files:
+			if get_extension(f, extensions):
+				results.append(os.path.join(dirpath, f))
+	return results
 
-	
-	fmt = {
-		'artist': source.artist.encode('utf8'),
-		'album':  source.album.encode('utf8'),
-		'title':  source.title.encode('utf8'),
-		'track':  source.track,
-		'genre':  source.genre.encode('utf8'),
-		'year' :   source.year,
-		'initial'   : first_letter.encode('utf8'),
-		'extension' : '.'+source.extension
-	}
-	
-	fmt.update({'yearstyle' :  yearstyle.format(**fmt)})
-	fmt.update({'trackstyle': trackstyle.format(**fmt)})	
-	fmt.update({'albumstyle': albumstyle.format(**fmt)})
-	
-	path = options.newpath.format(**fmt)
 
-	return os.path.join(options.target_dir, path)
 
+
+
+def run(source, target):
+	print os.path.basename(source.filename), "->\033[32m", target, "\033[0m"
