@@ -1,11 +1,12 @@
 # -*- coding: utf8 -*-
 
 import unittest, doctest
-import arrangemusic, config, tests
+import tests
+from arrangemusic_tools import config, processing
 
 if __name__ == '__main__':
 	print "RUNNING DOCTESTS arrangemusic"
-	suite = doctest.DocTestSuite(arrangemusic)
+	suite = doctest.DocTestSuite(processing)
 	unittest.TextTestRunner(verbosity=2).run(suite)
 	
 	print "RUNNING DOCTESTS config"
