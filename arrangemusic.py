@@ -118,7 +118,7 @@ class TagInfo(object):
 			return path
 		
 		
-	def print_changes(self):
+	def printChanges(self):
 		"""
 		Print information about patterns and path rewriting.
 		"""
@@ -152,10 +152,8 @@ def get_first(s, matches):
 	('The', 'World')
 	>>> get_first("Hello World", ['The'])
 	('', 'Hello World')
-	>>> get_first("Hello", ['The'])
+	>>> get_first("Hello", [])
 	('', 'Hello')
-	>>> get_first("Hello World", [])
-	('', 'Hello World')
 	"""
 	
 	sp = s.split()

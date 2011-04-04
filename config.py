@@ -7,7 +7,7 @@
  # created: 2010/04/04
  #
  
-import os, shutil
+import os
 import optparse
 from ConfigParser import ConfigParser
  
@@ -89,7 +89,6 @@ class Configuration(object):
 				
 				
 		self.cfg_files = read
-		self.files = []
 		
 		self.__setupOptions()
 
@@ -199,6 +198,6 @@ class Configuration(object):
 		self.use_moving  = options.use_moving
 		self.multiartist = options.multiartist
 		
-		self.files = args
+		return args
 	
 		
