@@ -25,13 +25,9 @@ class Configuration(object):
 	"""
 	Loads configuration file(s) and acts as a simple options container.
 	
-	>>> options = Configuration("default.cfg")
-	>>> options.cfg_files == ["default.cfg"]
-	True
-	
 	>>> options = Configuration()
 	>>> options.newpath
-	'%a/%B/%T%s.%e'
+	'{artist}/{albumstyle}/{trackstyle}{title}{extension}'
 	"""
 	
 	def __init__(self, cfg=''):
@@ -202,6 +198,7 @@ class Configuration(object):
 		if options.conf:
 			self.cfg_files.extend(self.cfg.read(options.conf))
 			
+		self.verbose     = options.verbose
 		self.target_dir  = options.target_dir
 		self.ask_before  = options.ask_before
 		self.do_it       = options.do_it
