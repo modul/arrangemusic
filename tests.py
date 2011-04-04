@@ -5,17 +5,40 @@ import arrangemusic
 import os
 from config import Configuration
 
-
-class TagMock(object):
+class TagPyFileRefMock(object):
 	def __init__(self, filename):
+		self.filename = filename
+		self.tagdict = {}
+	
+	def settag(self, **kwargs):
+		self.tagdict = kwargs
+	
+	def tag(self):
+		return TagPyTagMock(**self.tagdict)
+		
+	def file(self):
+		return TagPyFileMock(self.filename)
+		
+
+class TagPyTagMock(object):
+	def __init__(self, **kwargs):
 		self.artist = ""
 		self.album  = ""
 		self.genre  = ""
 		self.track  = 0
 		self.title  = ""
 		self.year   = 0
+		
+		for k, v in kwargs.items():
+			if self.__dict__.has_key(k):
+				self.__dict__[k] = v
+
+
+class TagPyFileMock(object):
+	def __init__(self, filename):
 		self.filename = filename
-	
+	def name(self):
+		return self.filename
 		
 
 class TestConfig(unittest.TestCase):
@@ -43,27 +66,32 @@ class TestConfig(unittest.TestCase):
 	
 
 		
-class TestProcessTag(unittest.TestCase):
+class TestArrangeMusic(unittest.TestCase):
 	
 	def setUp(self):
-		self.tag = TagMock("testfile.mp3")
-		self.tag.artist = "test"
-		self.tag.title  = "file"
-		self.tag.track  = 0
-		self.tag.year   = 2001
-		self.tag.genre  = ""
-		self.tag.album  =  "Test Case"
+		self.options = Configuration('default.cfg')
+		self.tagm = TagPyFileRefMock("testfile.mp3")
+		self.tagm.settag(artist="test", title="file", track=0, year=2001, genre="", album="Test Case")
 	
 	def test_tagInfo(self):
-		tag = arrangemusic.TagInfo(self.tag)
+		tagm = self.tagm
+				
+		tag = arrangemusic.TagInfo(tagm)
 		self.assertEqual(tag.artist, 'Test')
 		self.assertEqual(tag.title, 'File')
 		self.assertEqual(tag.track, '')
-		self.assertEqual(tag.year, 2001)
+		self.assertEqual(tag.year, '2001')
 		self.assertEqual(tag.genre, 'No Genre')
 		self.assertEqual(tag.album, 'Test Case')
+		self.assertEqual(tag.filename, "testfile.mp3")
+		self.assertEqual(tag.extension, "mp3")
 		
-	def test_fileListing(self):
+		tagm.settag(year=0)
+		tag = arrangemusic.TagInfo(tagm)
+		self.assertEqual(tag.year, '')
+		
+		
+	def test_file_listing(self):
 		exts = ['.py']
 		listing = arrangemusic.file_listing('.', exts)
 		self.assertTrue('./arrangemusic.py' in listing)
@@ -71,5 +99,23 @@ class TestProcessTag(unittest.TestCase):
 		self.assertTrue('./tests.py' in listing)
 		self.assertFalse('./config.pyc' in listing)
 	
+	
+	def test_process_file(self):
+		tagm = self.tagm
+		tag = arrangemusic.TagInfo(tagm)
+		path = arrangemusic.process_file(tag, self.options)
+		self.assertEqual(path, "./T/Test/2001-Test_Case/File.mp3")
+		
+		tagm.filename = "mh.fac"
+		tagm.settag(title="whatever you want", track=5, artist="Test")
+		tag = arrangemusic.TagInfo(tagm)
+		path = arrangemusic.process_file(tag, self.options)
+		self.assertEqual(path, "./T/Test//05.Whatever_You_Want.")
+		
+		tagm.filename = u"höher.mp3"
+		tagm.settag(title=u"Höher", track=0, artist=u"Pilot", album=u"Über den Wolken")
+		tag = arrangemusic.TagInfo(tagm)
+		path = arrangemusic.process_file(tag, self.options)
+		self.assertEqual(path, u"./P/Pilot/Über_Den_Wolken/Höher.mp3")
 		
 		
