@@ -3,7 +3,7 @@
 import unittest, doctest
 import arrangemusic
 import os
-from config import Configuration
+from config import Configuration, file_extensions
 
 class TagPyFileRefMock(object):
 	def __init__(self, filename):
@@ -54,12 +54,12 @@ class TestConfig(unittest.TestCase):
 		self.assertFalse(options.use_moving)
 		self.assertFalse(options.multiartist)
 		
-		options.parseArguments(argv)
+		files = options.parseArguments(argv)
 		self.assertFalse(options.do_it)
 		self.assertTrue(options.use_moving)
 		self.assertTrue(options.multiartist)
 		
-		self.assertEqual(options.files, ['file'])
+		self.assertEqual(files, ['file'])
 	
 	#def test_config_print_help(self):
 		#self.options.help()
@@ -120,15 +120,40 @@ class TestArrangeMusic(unittest.TestCase):
 		tag = arrangemusic.TagInfo(tagm, self.options)
 		argv = ["-vt", "/tmp", "testfile.mp3"]
 		options = self.options
-		options.parseArguments(argv)
+		files = options.parseArguments(argv)
 		self.assertTrue(options.verbose)
 		self.assertEqual(options.target_dir, "/tmp")
-		self.assertEqual(options.files, ["testfile.mp3"])
+		self.assertEqual(files, ["testfile.mp3"])
 		
 		path = tag.makePath()
 		self.assertEqual(path, "T/Test/2001-Test_Case/File.mp3")
 		
-		tag.print_changes()
+		tag.printChanges()
+	
+	
+	def test_virtual_start(self):
+		argv = ['testfile.mp3', 'tests']
+		options = self.options
+		files = options.parseArguments(argv)
+				
+		i = 1
+		sources = []
+		for f in files:
+			if os.path.isfile(f):
+				tagm = TagPyFileRefMock(f)
+				tagm.settag(artist="Me, myself", title="test song %i"%i, album=u"Nananö", track=i, year=2011)
+				sources.append(arrangemusic.TagInfo(tagm, options))
+				i+=1
+			elif os.path.isdir(f):
+				files.extend(arrangemusic.file_listing(f, file_extensions))
+			else:
+				print "No such file: ", f
+				
+		
+		for f in sources:
+			print f.makePath()
+		
+		
 		
 		
 		
