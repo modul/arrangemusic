@@ -275,7 +275,7 @@ if __use_moving:
 if __multiartist:
     print "Using multiartist pattern (use -1 to overwrite)"
 
-print "Target directory:", target_dir
+print "Target directory:", target_dir, "(change with -t DIRECTORY)"
 
 print "\nSource(s):"
 for i in myfiles:
