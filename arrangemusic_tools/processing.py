@@ -11,7 +11,7 @@
 
 
 
-import os
+import os, shutil
 import config
 
 
@@ -226,9 +226,13 @@ def process_file(source, options):
 	"""
 	do = options.do_it
 	
-	path = os.path.join(options.target_dir, source.makePath())
+	dest = source.makePath()
+	path = os.path.join(options.target_dir, dest)
 	
-	print os.path.basename(source.filename), "->\033[32m", target, "\033[0m"
+	if options.verbose:
+		source.printChanges()
+		
+	print os.path.basename(source.filename), "->\033[32m", dest, "\033[0m"
 	
 	if options.ask_before and do and raw_input("Is that OK? [Y/n] ") not in ('Y', 'y', ''):
 		do = False
@@ -250,4 +254,45 @@ def process_file(source, options):
 		print "Not done."
 
 
-		
+def start(argv, mktag, cfg=''):
+	"""
+	Parses 'argv', loads configuration and prepares source files.
+	Returns a Configuration instance and a list of TagInfo instances.
+	Before instantiating TagInfo, 'mktag' is applied to the filename.
+	"""
+	options = config.Configuration(cfg)
+	args    = options.parseArguments(argv)
+
+	if not args:
+		options.help()
+		sys.exit(1)
+
+
+	print "\033[33m"
+
+	if len(options.cfg_files) == 0:
+		print "No configuration (use -f to supply one)"
+	if not options.do_it:
+		print "Dry-run (just pretending, use -d to overwrite)"
+	if options.ask_before: 
+		print "Interactive (use -I to don't get asked on each file)"
+	if options.verbose:
+		print "Verbose (use -q to stop spam)" 
+	if options.use_moving:
+		print "Removing source files (use -M to keep them)"
+	if options.multiartist:
+		print "Multi-Artist (use -1 to use single artist pattern)"
+	
+	print "Target directory:", options.target_dir, "(change with -t DIRECTORY)"
+	print "\033[0m"
+	
+	print "\nSource(s):"
+	sources = []
+	for f in args:
+		if os.path.isfile(f):
+			print f, 
+			sources.append(TagInfo(mktag(f), options))
+		elif os.path.isdir(f):
+			args.extend(file_listing(f, config.file_extensions))
+			
+	return (options, sources)
