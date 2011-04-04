@@ -76,21 +76,36 @@ class TestArrangeMusic(unittest.TestCase):
 	def test_tagInfo(self):
 		tagm = self.tagm
 				
-		tag = arrangemusic.TagInfo(tagm)
+		tag = arrangemusic.TagInfo(tagm, self.options)
 		self.assertEqual(tag.artist, 'Test')
 		self.assertEqual(tag.title, 'File')
 		self.assertEqual(tag.track, '')
-		self.assertEqual(tag.year, '2001')
+		self.assertEqual(tag.year, 2001)
 		self.assertEqual(tag.genre, 'No Genre')
 		self.assertEqual(tag.album, 'Test Case')
 		self.assertEqual(tag.filename, "testfile.mp3")
 		self.assertEqual(tag.extension, "mp3")
 		
+		path = tag.makePath()
+		self.assertEqual(path, "T/Test/2001-Test_Case/File.mp3")
+		
 		tagm.settag(year=0)
-		tag = arrangemusic.TagInfo(tagm)
+		tag = arrangemusic.TagInfo(tagm, self.options)
 		self.assertEqual(tag.year, '')
 		
+		tagm.filename = "mh.fac"
+		tagm.settag(title="whatever you want", track=5, artist="Test")
+		tag = arrangemusic.TagInfo(tagm, self.options)
+		path = tag.makePath()
+		self.assertEqual(path, "T/Test//05.Whatever_You_Want.")
 		
+		tagm.filename = u"höher.mp3"
+		tagm.settag(title=u"Höher…", track=0, artist=u"Pilot", album=u"Über den Wolken")
+		tag = arrangemusic.TagInfo(tagm, self.options)
+		path = tag.makePath()
+		self.assertEqual(path, "P/Pilot/Über_Den_Wolken/Höher….mp3")
+		
+	
 	def test_file_listing(self):
 		exts = ['.py']
 		listing = arrangemusic.file_listing('.', exts)
@@ -98,30 +113,11 @@ class TestArrangeMusic(unittest.TestCase):
 		self.assertTrue('./config.py' in listing)
 		self.assertTrue('./tests.py' in listing)
 		self.assertFalse('./config.pyc' in listing)
-	
-	
-	def test_process_file(self):
-		tagm = self.tagm
-		tag = arrangemusic.TagInfo(tagm)
-		path = arrangemusic.process_file(tag, self.options)
-		self.assertEqual(path, "./T/Test/2001-Test_Case/File.mp3")
+
 		
-		tagm.filename = "mh.fac"
-		tagm.settag(title="whatever you want", track=5, artist="Test")
-		tag = arrangemusic.TagInfo(tagm)
-		path = arrangemusic.process_file(tag, self.options)
-		self.assertEqual(path, "./T/Test//05.Whatever_You_Want.")
-		
-		tagm.filename = u"höher.mp3"
-		tagm.settag(title=u"Höher…", track=0, artist=u"Pilot", album=u"Über den Wolken")
-		tag = arrangemusic.TagInfo(tagm)
-		path = arrangemusic.process_file(tag, self.options)
-		self.assertEqual(path, "./P/Pilot/Über_Den_Wolken/Höher….mp3")
-	
-	
 	def test_commandline_process_file(self):
 		tagm = self.tagm
-		tag = arrangemusic.TagInfo(tagm)
+		tag = arrangemusic.TagInfo(tagm, self.options)
 		argv = ["-vt", "/tmp", "testfile.mp3"]
 		options = self.options
 		options.parseArguments(argv)
@@ -129,8 +125,10 @@ class TestArrangeMusic(unittest.TestCase):
 		self.assertEqual(options.target_dir, "/tmp")
 		self.assertEqual(options.files, ["testfile.mp3"])
 		
-		path = arrangemusic.process_file(tag, options)
-		self.assertEqual(path, "/tmp/T/Test/2001-Test_Case/File.mp3")
+		path = tag.makePath()
+		self.assertEqual(path, "T/Test/2001-Test_Case/File.mp3")
+		
+		tag.print_changes()
 		
 		
 		
