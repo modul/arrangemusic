@@ -82,19 +82,18 @@ class TagInfo(object):
 			trackstyle = self.options.trackstyle
 		else:
 			trackstyle = ''
-
 		if self.year:
 			yearstyle = self.options.yearstyle
 		else:
 			yearstyle = ''
-
 		if self.album:
 			albumstyle = self.options.albumstyle
 		else:
 			albumstyle = ''
 
+		path = self.options.newpath
 		
-		fmt = {
+		subst = {
 			'artist': artist.encode('utf8'),
 			'album':  album.encode('utf8'),
 			'title':  title.encode('utf8'),
@@ -105,13 +104,18 @@ class TagInfo(object):
 			'extension': '.'+self.extension
 		}
 		
-		fmt.update({'yearstyle' :  yearstyle.format(**fmt)})
-		fmt.update({'trackstyle': trackstyle.format(**fmt)})	
-		fmt.update({'albumstyle': albumstyle.format(**fmt)})
+		try:
+			subst.update({'yearstyle' :  yearstyle.format(**subst)})
+			subst.update({'albumstyle': albumstyle.format(**subst)})
+			subst.update({'trackstyle': trackstyle.format(**subst)})
+			
+			path = path.format(**subst)
 		
-		path = self.options.newpath.format(**fmt)
-
-		return path
+		except KeyError as key:
+			print "Error in pattern: {0} referenced before assigned".format(key)
+			return ''
+		else:
+			return path
 		
 		
 	def print_changes(self):
@@ -136,7 +140,7 @@ class TagInfo(object):
 			print "TARGET :", options.target_dir
 			print "DIR    :", os.path.dirname(target)
 			print "FILE   : %s \n" % (os.path.basename(target))
-		
+			
 		
 
 def get_first(s, matches):
@@ -210,8 +214,32 @@ def file_listing(directory, extensions):
 	return results
 
 
-
-
-
-def run(source, target):
+def process_file(source, options):
+	"""
+	Copies or moves a file described by 'source'.
+	"""
+	do = options.do_it
+	
+	path = os.path.join(options.target_dir, source.makePath())
+	
 	print os.path.basename(source.filename), "->\033[32m", target, "\033[0m"
+	
+	if options.ask_before and do and raw_input("Is that OK? [Y/n] ") not in ('Y', 'y', ''):
+		do = False
+	
+	if do:
+		target = os.path.dirname(path)
+		if not os.path.isdir(target):
+			os.makedirs(target)
+		if os.path.isfile(path):
+			if raw_input("File exists, overwrite? [N/y] ") not in ("y", "Y"):
+				print "Not overwriting."
+				do = False
+		if do:
+			if options.use_moving:
+				shutil.move(source.filename, path)
+			else:
+				shutil.copy(source.filename, path)
+	else: 
+		print "Not done."
+		
