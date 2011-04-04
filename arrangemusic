@@ -257,9 +257,9 @@ def process_file(sourcefile):
 
 ### MAIN CODE
 
-myfile = string.join(cmdline[1])  # for arguments with unescaped whitespace
+myfiles = cmdline[1]
 
-if not myfile:
+if not myfiles:
 	usage()
 
 print "\033[33m"
@@ -276,22 +276,28 @@ if __multiartist:
     print "Using multiartist pattern"
 
 print "Target directory:", target_dir
+
+print "\nSource(s):"
+for i in myfiles:
+	print i
 print "\033[0m"
-    
+
+
 try:
-    if os.path.isfile(myfile):
-        # single file code
-        process_file(myfile)
+	for myfile in myfiles:
+		if os.path.isfile(myfile):
+			# single file code
+			process_file(myfile)
 
-    elif os.path.isdir(myfile):
-        # file listing, recursive operation
-        listing = file_listing(myfile)
-        for f in listing:
-            process_file(f)
+		elif os.path.isdir(myfile):
+			# file listing, recursive operation
+			listing = file_listing(myfile)
+			for f in listing:
+				process_file(f)
 
-    else:
-        print "Neither a file nor a directory:", myfile
-        sys.exit(1)
+		else:
+			print "Neither a file nor a directory:", myfile
+			sys.exit(1)
 
 except KeyboardInterrupt:
     print "\nTerminating..."
