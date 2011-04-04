@@ -38,12 +38,34 @@ class TagPyFileMock(object):
 		self.filename = filename
 	def name(self):
 		return self.filename
+
+
+class taggenerator(object):
+	def __init__(self, **kwargs):
+		self.artist = ''
+		self.title = ''
+		self.album = ''
+		self.year = 0
+		self.genre = ''
+		self.track = 0
 		
+		for k, v in kwargs.items():
+			if self.__dict__.has_key(k):
+				self.__dict__[k] = v
+		
+	def next(self, filename):
+		self.track += 1
+		title = self.title.format(track=self.track)
+		
+		tag = TagPyFileRefMock(filename)
+		tag.settag(artist=self.artist, title=title, album=self.album, year=self.year, genre=self.genre, track=self.track)
+		return tag
+
 
 class TestConfig(unittest.TestCase):
 	
 	def setUp(self):
-		self.options = config.Configuration('default.cfg')
+		self.options = config.Configuration('test.cfg')
 	
 	def test_config_arg_parse(self):
 		options = self.options
@@ -68,7 +90,7 @@ class TestConfig(unittest.TestCase):
 class TestArrangeMusic(unittest.TestCase):
 	
 	def setUp(self):
-		self.options = config.Configuration('default.cfg')
+		self.options = config.Configuration('test.cfg')
 		self.tagm = TagPyFileRefMock("testfile.mp3")
 		self.tagm.settag(artist="test", title="file", track=0, year=2001, genre="", album="Test Case")
 	
@@ -109,7 +131,6 @@ class TestArrangeMusic(unittest.TestCase):
 		exts = ['.py']
 		listing = processing.file_listing('.', exts)
 		self.assertTrue('./runtests.py' in listing)
-		self.assertTrue('./setup.py' in listing)
 		self.assertTrue('./tests.py' in listing)
 		self.assertFalse('./tests.pyc' in listing)
 
@@ -131,28 +152,20 @@ class TestArrangeMusic(unittest.TestCase):
 		tag.printChanges()
 	
 	
-	def test_virtual_start(self):
-		argv = ['tests']
-		options = self.options
-		files = options.parseArguments(argv)
-				
-		i = 1
-		sources = []
-		for f in files:
-			if os.path.isfile(f):
-				tagm = TagPyFileRefMock(f)
-				tagm.settag(artist="Me, myself", title="test song %i"%i, album=u"Nananö", track=i, year=2011)
-				sources.append(processing.TagInfo(tagm, options))
-				i+=1
-			elif os.path.isdir(f):
-				files.extend(processing.file_listing(f, config.file_extensions))
-			else:
-				print "No such file: ", f
-				
+	def test_start(self):
+		argv = ['-Inq', './']
+		gen = taggenerator(artist='The Wall', album='Bricks', title=u'Who’s number {track}?')
+		options, sources = processing.start(argv, gen.next, 'test.cfg')
 		
+		self.assertFalse(options.verbose)
+		self.assertFalse(options.do_it)
+		self.assertFalse(options.ask_before)
 		print
-		for f in sources:
-			print f.makePath()
+		
+		for s in sources:
+			processing.process_file(s, options)
+		
+		
 		
 		
 		
