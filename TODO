@@ -41,10 +41,7 @@ OLD TODO
 - the clean-algo shall be optional..
   and it should go to its own file..
 
-- release that ***** piece of code! (berlios? sf?)
-- we need an install routine
-- the script should be able to arrange more than one file ;)
-- if we got a configfile.. config parsing should be in an extra file..
+-- if we got a configfile.. config parsing should be in an extra file..
   some defaults should go there too
   especially the locations for config files ($HOME/.arrangemusic, /etc/arrangemusic)
   
