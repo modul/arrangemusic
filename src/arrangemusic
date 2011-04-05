@@ -14,13 +14,6 @@
 
 import os, sys
 import tagpy
-from arrangemusic_tools import config, processing
+from arrangemusic_tools.processing import run
 
-options, sources = processing.start(sys.argv[1:], tagpy.FileRef)
-
-try:
-	for s in sources:
-		processing.process_file(s, options)
-		
-except KeyboardInterrupt:
-	print "\nTerminating..."
+run(sys.argv[1:], tagpy.FileRef)
