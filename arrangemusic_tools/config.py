@@ -35,31 +35,27 @@ class Configuration(object):
 		Load configuration and setup attributes.
 		"""
 		self.cfg = ConfigParser()
-		read = self.cfg.read([default_cfg, user_cfg, cfg])
+		self.cfg_files = self.cfg.read([default_cfg, user_cfg, cfg])
 		
-		if len(read) == 0:
-			self.verbose      = False
-			self.do_it        = False
-			self.use_moving   = False
-			self.ask_before   = False
-			self.target_dir   = "./"
+		self.verbose      = False
+		self.do_it        = False
+		self.use_moving   = False
+		self.ask_before   = False
+		self.target_dir   = "./"
+		self.multiartist  = False
+		self.replacements = {}
+		self.unk_artist   = "Unknown Artist"
+		self.unk_title    = "Unknown Title"
+		self.no_genre     = "No genre"
+		self.ignore_articles = False
+		self.common_articles = ['The']
+		self.trackstyle  = "{track}."
+		self.albumstyle  = "{yearstyle}{album}"
+		self.yearstyle   = "{year}-"
+		self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}{extension}"
+		self.initial_num = "first"
 
-			self.multiartist  = False
-			self.replacements = {}
-			self.unk_artist   = "Unknown Artist"
-			self.unk_title    = "Unknown Title"
-			self.no_genre     = "No genre"
-			
-			self.ignore_articles = False
-			self.common_articles = ['The']
-			self.trackstyle  = "{track}."
-			self.albumstyle  = "{yearstyle}{album}"
-			self.yearstyle   = "{year}-"
-			self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}{extension}"
-			self.initial_num = "first"
-			
-
-		else:
+		if self.cfg_files:
 			self.verbose      = self.cfg.getboolean("commandline", "verbose")
 			self.do_it        = not self.cfg.getboolean("commandline", "pretend")
 			self.use_moving   = self.cfg.getboolean("commandline", "move")
@@ -72,11 +68,21 @@ class Configuration(object):
 			self.unk_title    = self.cfg.get("replacements", "unknown_title")
 			self.no_genre     = self.cfg.get("replacements", "no_genre")
 			
-			if self.multiartist is True:
-				pattern = "multiartist"
-			else:
-				pattern = "singleartist"
-				
+		self._setupPattern()
+		self._setupOptions()
+
+
+	def _setupPattern(self):
+		"""
+		Load rename pattern.
+		"""
+	
+		if self.multiartist is True:
+			pattern = "multiartist"
+		else:
+			pattern = "singleartist"
+		
+		if len(self.cfg_files) > 0:
 			self.ignore_articles = self.cfg.getboolean(pattern, "ignore_articles")
 			self.common_articles = self.cfg.get(pattern, "common_articles").split(',')
 			self.trackstyle  = self.cfg.get(pattern, "trackstyle")
@@ -84,14 +90,19 @@ class Configuration(object):
 			self.yearstyle   = self.cfg.get(pattern, "yearstyle")
 			self.newpath     = self.cfg.get(pattern, "new_path")
 			self.initial_num = self.cfg.get(pattern, "initial_of_number")
-				
-				
-		self.cfg_files = read
-		
-		self.__setupOptions()
-
-		
-	def __setupOptions(self):
+		else:
+			self.ignore_articles = False
+			self.common_articles = ['The']
+			self.trackstyle  = "{track}."
+			self.albumstyle  = "{yearstyle}{album}"
+			self.yearstyle   = "{year}-"
+			self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}{extension}"
+			self.initial_num = "first"
+			if pattern == "multiartist":
+				self.newpath = "{albumstyle}/{trackstyle}{artist}-{title}{extension}"
+	
+	
+	def _setupOptions(self):
 		"""
 		Setup commandline parser.
 		"""
@@ -203,7 +214,10 @@ class Configuration(object):
 		self.ask_before  = options.ask_before
 		self.do_it       = options.do_it
 		self.use_moving  = options.use_moving
-		self.multiartist = options.multiartist
+		
+		if self.multiartist != options.multiartist:
+			self.multiartist = options.multiartist
+			self._setupPattern()
 		
 		return args
 	
