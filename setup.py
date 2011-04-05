@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='arrangemusic',
-      version='0.4',
+      version='0.4.1',
       description='arrangemusic',
       long_description="""Create hierarchical directory/file structures of music files, based on tag information.""",
       author='Remo Giermann',

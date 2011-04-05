@@ -13,7 +13,7 @@ import os
 import optparse
 from ConfigParser import ConfigParser
  
-version = "v0.4"
+version = "v0.4.1"
 
 file_extensions = ["mp3", "ogg", "flac"]
  
