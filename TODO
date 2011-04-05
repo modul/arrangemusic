@@ -1,51 +1,18 @@
 2011/04/05
 - patterns überarbeiten…
-- use {artist}, {title} and str.format()!!
+
 
 2010/07/09
-- clean up help text
+
 - more path pattern configurations should be possible, selecting them
   on commandline, default per default configuration
-- replace 'find' with python code
-- perhaps more object-oriented code, class DoStuff, class ArrangeStuff, whatever
-- do things below 
+
 
 2010/07/06
-- create setup.py, include default files like default.cfg
-  installation, distribution
-- remove all $HOME paths/replace with install paths
-- replace getopt with optparse! 
-  (with py2.7 replace optparse with argparse)
+
 
 2010/02/18
-- code cleaning
-- could support more than ogg and mp3 (check taglib/tagpy)
 
 o if you're really bored: qt frontend!
 
-
-
-OLD TODO
-- config file
-- use more than one filename/path-pattern
-  - the user may chose one on the commandline
-    sth like: arrangemusic.py -c pattern1_name [...]
-  - the config file should allow more than one pattern (pure logic, hu?)
-    and one pattern should be used as the default one
-	AND.. one pattern should be a hardcoded default, if no pattern is given
-	or.. the app must break, when there is no default pattern
-  - after that.. with two patterns... multiartist cds aren't a problem
-  -> pattern1 = %a/%b/%T%t
-  -> multiartist-pattern = %b/%T%t
-  will be:
-  Bad_Religion/Stranger_Than_Fiction/01.lala.mp3
-  and for multiartist:
-  Punk_O_Rama_Vol._2/01.track.mp3
-  that's perfect, isn't it? ;)
-- the clean-algo shall be optional..
-  and it should go to its own file..
-
--- if we got a configfile.. config parsing should be in an extra file..
-  some defaults should go there too
-  especially the locations for config files ($HOME/.arrangemusic, /etc/arrangemusic)
   
