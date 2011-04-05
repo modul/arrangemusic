@@ -11,7 +11,7 @@
 
 
 
-import os, shutil
+import sys, os, shutil
 import config
 
 

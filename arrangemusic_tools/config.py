@@ -35,7 +35,7 @@ class Configuration(object):
 		Load configuration and setup attributes.
 		"""
 		self.cfg = ConfigParser()
-		read = self.cfg.read([cfg, default_cfg, user_cfg])
+		read = self.cfg.read([default_cfg, user_cfg, cfg])
 		
 		if len(read) == 0:
 			self.verbose      = False
@@ -60,7 +60,7 @@ class Configuration(object):
 			
 
 		else:
-			self.verbose      = self.cfg.get("commandline", "verbose")
+			self.verbose      = self.cfg.getboolean("commandline", "verbose")
 			self.do_it        = not self.cfg.getboolean("commandline", "pretend")
 			self.use_moving   = self.cfg.getboolean("commandline", "move")
 			self.ask_before   = self.cfg.getboolean("commandline", "interactive")
@@ -153,7 +153,7 @@ class Configuration(object):
 			epilog = "No configuration file found. Default options: "
 			cfg = ''
 		else:
-			epilog  = "The default options from {cfg} are: "
+			epilog  = "Default options from {cfg} are: "
 
 			if user_cfg in self.cfg_files:
 				cfg = user_cfg
@@ -168,7 +168,7 @@ class Configuration(object):
 		fmt = {'cfg': cfg,
 		'verbose': self.verbose and 'verbose, ' or '',
 		'ask': self.ask_before and 'interactive, ' or '',
-		'dry': self.do_it and 'dry-run, ' or '',
+		'dry': self.do_it and '' or 'dry-run, ',
 		'move': self.use_moving and 'move files, ' or '',
 		'multi': self.multiartist and 'multiartist.' or '',
 		'target': self.target_dir or './',
@@ -197,7 +197,7 @@ class Configuration(object):
 		
 		if options.conf:
 			self.cfg_files.extend(self.cfg.read(options.conf))
-			
+		
 		self.verbose     = options.verbose
 		self.target_dir  = options.target_dir
 		self.ask_before  = options.ask_before
