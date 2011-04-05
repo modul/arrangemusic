@@ -1,3 +1,7 @@
-arrangemusic
+README
 setup.py
-default.cfg
+src/arrangemusic
+src/default.cfg
+src/arrangemusic_tools/__init__.py
+src/arrangemusic_tools/config.py
+src/arrangemusic_tools/processing.py
