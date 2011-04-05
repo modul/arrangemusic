@@ -71,13 +71,13 @@ class TestConfig(unittest.TestCase):
 		options = self.options
 		argv = ["-nm2", "file"]
 		
-		self.assertTrue(options.do_it)
-		self.assertFalse(options.use_moving)
+		self.assertFalse(options.dryrun)
+		self.assertFalse(options.move)
 		self.assertFalse(options.multiartist)
 		
 		files = options.parseArguments(argv)
-		self.assertFalse(options.do_it)
-		self.assertTrue(options.use_moving)
+		self.assertTrue(options.dryrun)
+		self.assertTrue(options.move)
 		self.assertTrue(options.multiartist)
 		
 		self.assertEqual(files, ['file'])
@@ -151,7 +151,7 @@ class TestArrangeMusic(unittest.TestCase):
 	
 	def test_run(self):
 		print
-		argv = ['-Inv2', './']
+		argv = ['-n', './']
 		gen = taggenerator(artist='The Wall', album='Bricks', title=u'Who’s number {track}?')
 		processing.run(argv, gen.next, 'test.cfg')
 		

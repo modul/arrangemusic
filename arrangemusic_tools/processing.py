@@ -190,7 +190,7 @@ def process_file(source, options):
 	"""
 	Copies or moves a file described by 'source' (TagInfo instance).
 	"""
-	do = options.do_it
+	do = not options.dryrun
 	
 	dest = source.makePath()
 	path = os.path.join(options.target_dir, dest)
@@ -207,7 +207,7 @@ def process_file(source, options):
 	
 	print os.path.basename(source.filename), "->\033[32m", dest, "\033[0m"
 	
-	if options.ask_before and do and raw_input("Is that OK? [Y/n] ") not in ('Y', 'y', ''):
+	if options.interactive and do and raw_input("Is that OK? [Y/n] ") not in ('Y', 'y', ''):
 		do = False
 	
 	if do:
@@ -219,7 +219,7 @@ def process_file(source, options):
 				print "Not overwriting."
 				do = False
 		if do:
-			if options.use_moving:
+			if options.move:
 				shutil.move(source.filename, path)
 			else:
 				shutil.copy(source.filename, path)
@@ -235,13 +235,13 @@ def print_overview(options):
 
 	if len(options.cfg_files) == 0:
 		print "No configuration (use -f to supply one)"
-	if not options.do_it:
+	if options.dryrun:
 		print "Dry-run (just pretending, use -d to overwrite)"
-	if options.ask_before: 
+	if options.interactive: 
 		print "Interactive (use -I to don't get asked on each file)"
 	if options.verbose:
 		print "Verbose (use -q to stop spam)" 
-	if options.use_moving:
+	if options.move:
 		print "Removing source files (use -M to keep them)"
 	if options.multiartist:
 		print "Multi-Artist (use -1 to use single artist pattern)"

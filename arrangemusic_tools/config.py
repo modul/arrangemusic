@@ -38,9 +38,9 @@ class Configuration(object):
 		self.cfg_files = self.cfg.read([default_cfg, user_cfg, cfg])
 		
 		self.verbose      = False
-		self.do_it        = False
-		self.use_moving   = False
-		self.ask_before   = False
+		self.dryrun       = True
+		self.move         = False
+		self.interactive  = False
 		self.target_dir   = "./"
 		self.multiartist  = False
 		self.replacements = {}
@@ -54,13 +54,13 @@ class Configuration(object):
 				self.verbose = self.cfg.getboolean("commandline", "verbose")
 				
 			if self.cfg.has_option("commandline", "pretend"):
-				self.do_it = not self.cfg.getboolean("commandline", "pretend")
+				self.dryrun = self.cfg.getboolean("commandline", "pretend")
 				
 			if self.cfg.has_option("commandline", "move"):
-				self.use_moving = self.cfg.getboolean("commandline", "move")
+				self.move = self.cfg.getboolean("commandline", "move")
 				
 			if self.cfg.has_option("commandline", "interactive"):
-				self.ask_before = self.cfg.getboolean("commandline", "interactive")
+				self.interactive = self.cfg.getboolean("commandline", "interactive")
 				
 			if self.cfg.has_option("commandline", "target"):
 				self.target_dir = self.cfg.get("commandline", "target")
@@ -136,16 +136,16 @@ class Configuration(object):
 		
 		actiongroup.add_option("-i", "--interactive", 
 		  help="ask before doing anything", 
-		  action="store_true", dest="ask_before", default=self.ask_before)
+		  action="store_true", dest="interactive", default=self.interactive)
 		actiongroup.add_option("-I", "--non-interactive", 
 		  help="don't ask",
-		  action="store_false", dest="ask_before", default=self.ask_before)
+		  action="store_false", dest="interactive", default=self.interactive)
 		actiongroup.add_option("-n", "--dry-run", 
 		 help="just pretend actions",
-		 action="store_false", dest="do_it", default=self.do_it)
+		 action="store_true", dest="dryrun", default=self.dryrun)
 		actiongroup.add_option("-d", "--do-it", 
 		 help="don't pretend actions",
-		 action="store_true", dest="do_it", default=self.do_it)
+		 action="store_false", dest="dryrun", default=self.dryrun)
 		actiongroup.add_option("-v", "--verbose", 
 		 help="print more information",
 		 action="store_true", dest="verbose", default=self.verbose)
@@ -157,10 +157,10 @@ class Configuration(object):
 
 		targetgroup.add_option("-m", "--move", 
 		 help="move files (remove source files)",
-		 action="store_true", dest="use_moving", default=self.use_moving)
+		 action="store_true", dest="move", default=self.move)
 		targetgroup.add_option("-c", "--copy", 
 		 help="copy files",
-		 action="store_false", dest="use_moving", default=self.use_moving)
+		 action="store_false", dest="move", default=self.move)
 		targetgroup.add_option("-t", "--target", 
 		 help="move/copy files to DIRECTORY",
 		 metavar="DIRECTORY", dest="target_dir", default=self.target_dir)
@@ -197,9 +197,9 @@ class Configuration(object):
 		
 		fmt = {'cfg': cfg,
 		'verbose': self.verbose and 'verbose, ' or '',
-		'ask': self.ask_before and 'interactive, ' or '',
-		'dry': self.do_it and '' or 'dry-run, ',
-		'move': self.use_moving and 'move files, ' or '',
+		'ask': self.interactive and 'interactive, ' or '',
+		'dry': self.dryrun and '' or 'dry-run, ',
+		'move': self.move and 'move files, ' or '',
 		'multi': self.multiartist and 'multiartist.' or '',
 		'target': self.target_dir or './',
 		'pattern': self.newpath
@@ -230,9 +230,9 @@ class Configuration(object):
 		
 		self.verbose     = options.verbose
 		self.target_dir  = options.target_dir
-		self.ask_before  = options.ask_before
-		self.do_it       = options.do_it
-		self.use_moving  = options.use_moving
+		self.interactive = options.interactive
+		self.dryrun      = options.dryrun
+		self.move        = options.move
 		
 		if self.multiartist != options.multiartist:
 			self.multiartist = options.multiartist
