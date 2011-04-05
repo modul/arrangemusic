@@ -47,26 +47,38 @@ class Configuration(object):
 		self.unk_artist   = "Unknown Artist"
 		self.unk_title    = "Unknown Title"
 		self.no_genre     = "No genre"
-		self.ignore_articles = False
-		self.common_articles = ['The']
-		self.trackstyle  = "{track}."
-		self.albumstyle  = "{yearstyle}{album}"
-		self.yearstyle   = "{year}-"
-		self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}{extension}"
-		self.initial_num = "first"
+		
 
 		if self.cfg_files:
-			self.verbose      = self.cfg.getboolean("commandline", "verbose")
-			self.do_it        = not self.cfg.getboolean("commandline", "pretend")
-			self.use_moving   = self.cfg.getboolean("commandline", "move")
-			self.ask_before   = self.cfg.getboolean("commandline", "interactive")
-			self.target_dir   = self.cfg.get("commandline", "target")
-			
-			self.multiartist  = self.cfg.getboolean("commandline", "multiartist")
-			self.replacements = eval(self.cfg.get("replacements", "replace"))
-			self.unk_artist   = self.cfg.get("replacements", "unknown_artist")
-			self.unk_title    = self.cfg.get("replacements", "unknown_title")
-			self.no_genre     = self.cfg.get("replacements", "no_genre")
+			if self.cfg.has_option("commandline", "verbose"):
+				self.verbose = self.cfg.getboolean("commandline", "verbose")
+				
+			if self.cfg.has_option("commandline", "pretend"):
+				self.do_it = not self.cfg.getboolean("commandline", "pretend")
+				
+			if self.cfg.has_option("commandline", "move"):
+				self.use_moving = self.cfg.getboolean("commandline", "move")
+				
+			if self.cfg.has_option("commandline", "interactive"):
+				self.ask_before = self.cfg.getboolean("commandline", "interactive")
+				
+			if self.cfg.has_option("commandline", "target"):
+				self.target_dir = self.cfg.get("commandline", "target")
+				
+			if self.cfg.has_option("commandline", "multiartist"):
+				self.multiartist = self.cfg.getboolean("commandline", "multiartist")
+				
+			if self.cfg.has_option("replacements", "replace"):
+				self.replacements = eval(self.cfg.get("replacements", "replace"))
+				
+			if self.cfg.has_option("replacements", "unknown-artist"):
+				self.unk_artist = self.cfg.get("replacements", "unknown-artist")
+				
+			if self.cfg.has_option("replacements", "unknown-title"):
+				self.unk_title = self.cfg.get("replacements", "unknown-title")
+				
+			if self.cfg.has_option("replacements", "no-genre"):
+				self.no_genre = self.cfg.get("replacements", "no-genre")
 			
 		self._setupPattern()
 		self._setupOptions()
@@ -81,25 +93,32 @@ class Configuration(object):
 			pattern = "multiartist"
 		else:
 			pattern = "singleartist"
-		
+			
+		self.ignore_articles = False
+		self.common_articles = ['The']
+		self.trackstyle  = "{track}."
+		self.albumstyle  = "{yearstyle}{album}"
+		self.yearstyle   = "{year}-"
+		self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}{extension}"
+		self.initial_num = "first"
+		if pattern == "multiartist":
+			self.newpath = "{albumstyle}/{trackstyle}{artist}-{title}{extension}"
+			
 		if len(self.cfg_files) > 0:
-			self.ignore_articles = self.cfg.getboolean(pattern, "ignore_articles")
-			self.common_articles = self.cfg.get(pattern, "common_articles").split(',')
-			self.trackstyle  = self.cfg.get(pattern, "trackstyle")
-			self.albumstyle  = self.cfg.get(pattern, "albumstyle")
-			self.yearstyle   = self.cfg.get(pattern, "yearstyle")
-			self.newpath     = self.cfg.get(pattern, "new_path")
-			self.initial_num = self.cfg.get(pattern, "initial_of_number")
-		else:
-			self.ignore_articles = False
-			self.common_articles = ['The']
-			self.trackstyle  = "{track}."
-			self.albumstyle  = "{yearstyle}{album}"
-			self.yearstyle   = "{year}-"
-			self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}{extension}"
-			self.initial_num = "first"
-			if pattern == "multiartist":
-				self.newpath = "{albumstyle}/{trackstyle}{artist}-{title}{extension}"
+			if self.cfg.has_option(pattern, "ignore-articles"):
+				self.ignore_articles = self.cfg.getboolean(pattern, "ignore-articles")
+			if self.cfg.has_option(pattern, "common-articles"):
+				self.common_articles = self.cfg.get(pattern, "common-articles").split(',')
+			if self.cfg.has_option(pattern, "trackstyle"):
+				self.trackstyle  = self.cfg.get(pattern, "trackstyle")
+			if self.cfg.has_option(pattern, "albumstyle"):
+				self.albumstyle  = self.cfg.get(pattern, "albumstyle")
+			if self.cfg.has_option(pattern, "yearstyle"):
+				self.yearstyle   = self.cfg.get(pattern, "yearstyle")
+			if self.cfg.has_option(pattern, "new-path"):
+				self.newpath     = self.cfg.get(pattern, "new-path")
+			if self.cfg.has_option(pattern, "initial-of-number"):
+				self.initial_num = self.cfg.get(pattern, "initial-of-number")
 	
 	
 	def _setupOptions(self):
