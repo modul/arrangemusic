@@ -134,7 +134,7 @@ class TestArrangeMusic(unittest.TestCase):
 		self.assertTrue('./tests.py' in listing)
 		self.assertFalse('./tests.pyc' in listing)
 
-		
+
 	def test_commandline_process_file(self):
 		tagm = self.tagm
 		tag = processing.TagInfo(tagm, self.options)
@@ -147,28 +147,13 @@ class TestArrangeMusic(unittest.TestCase):
 		
 		path = tag.makePath()
 		self.assertEqual(path, "T/Test/2001-Test_Case/File.mp3")
-		
+	
+	
+	def test_run(self):
 		print
-		tag.printChanges()
-	
-	
-	def test_start(self):
-		argv = ['-Inq', './']
+		argv = ['-Inv2', './']
 		gen = taggenerator(artist='The Wall', album='Bricks', title=u'Who’s number {track}?')
-		options, sources = processing.start(argv, gen.next, 'test.cfg')
-		
-		self.assertFalse(options.verbose)
-		self.assertFalse(options.do_it)
-		self.assertFalse(options.ask_before)
-		print
-		
-		for s in sources:
-			processing.process_file(s, options)
-		
-		
-		
-		
-		
+		processing.run(argv, gen.next, 'test.cfg')
 		
 		
 		

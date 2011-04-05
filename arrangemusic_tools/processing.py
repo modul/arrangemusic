@@ -42,34 +42,25 @@ class TagInfo(object):
 		
 		if not self.artist.isupper():     # leave uppercase strings as they are (e.g. ABBA)
 			self.artist = self.artist.title()  # or convert 'bad religion' to 'Bad Religion'
-
 		if not self.title.isupper():
 			self.title  = self.title.title()
-    
 		if not self.genre.isupper():
 			self.genre  = self.genre.title()
-    
-		if self.album: # album has not to be set
+		if self.album: 
 			if not self.album.isupper():
 				self.album  = self.album.title()
-		else: 
-			self.album = ''
-		
+		else: self.album = ''
 		if self.track > 0:
 			self.track = str(self.track).zfill(2)
-		else:
-			self.track = ''
-			
+		else: self.track = ''
 		if self.year <= 0:
 			self.year = ''
-		
 	
 		self.article, self.artist_noarticle = get_first(self.artist, options.common_articles)
 		if options.ignore_articles:
 			self.first_letter = self.artist_noarticle[0]
 		else:
 			self.first_letter = self.artist[0]
-
 		
 		if self.first_letter.isdigit():
 			if option.initial_num == "first":
@@ -129,31 +120,6 @@ class TagInfo(object):
 			return ''
 		else:
 			return path
-		
-		
-	def printChanges(self):
-		"""
-		Print information about patterns and path rewriting.
-		"""
-		options = self.options
-		target  = self.makePath()
-		
-		if options.verbose:	
-			print "FILE:", self.filename, "\n"
-			print "FILE PATTERN  :", options.newpath
-			print "TRACK PATTERN :", options.trackstyle
-			print "YEAR PATTERN  :", options.yearstyle
-			print "ALBUM PATTERN  :", options.albumstyle
-			print
-			print "ARTIST : %s -> %s" % (self.old_artist, self.artist)
-			print "ALBUM  : %s -> %s" % (self.old_album, self.album)
-			print "TITLE  : %s -> %s" % (self.old_title, self.title)
-			print "GENRE  : %s -> %s" % (self.old_genre, self.genre)
-			print "TRACK  :", self.track
-			print "TARGET :", options.target_dir
-			print "DIR    :", os.path.dirname(target)
-			print "FILE   : %s \n" % (os.path.basename(target))
-			
 		
 
 def get_first(s, matches):
@@ -222,16 +188,23 @@ def file_listing(directory, extensions):
 
 def process_file(source, options):
 	"""
-	Copies or moves a file described by 'source'.
+	Copies or moves a file described by 'source' (TagInfo instance).
 	"""
 	do = options.do_it
 	
 	dest = source.makePath()
 	path = os.path.join(options.target_dir, dest)
+			
+	if options.verbose:	
+		print "\nARTIST : %s -> %s" % (source.old_artist, source.artist)
+		print "ALBUM  : %s -> %s" % (source.old_album, source.album)
+		print "TITLE  : %s -> %s" % (source.old_title, source.title)
+		print "GENRE  : %s -> %s" % (source.old_genre, source.genre)
+		print "TRACK  :", source.track
+		print "TARGET :", options.target_dir
+		print "DIR    :", os.path.dirname(path)
+		print "FILE   : %s -> %s\n" % (source.filename, os.path.basename(path))
 	
-	if options.verbose:
-		source.printChanges()
-		
 	print os.path.basename(source.filename), "->\033[32m", dest, "\033[0m"
 	
 	if options.ask_before and do and raw_input("Is that OK? [Y/n] ") not in ('Y', 'y', ''):
@@ -254,20 +227,10 @@ def process_file(source, options):
 		print "Not done."
 
 
-def start(argv, mktag, cfg=''):
+def print_overview(options):
 	"""
-	Parses 'argv', loads configuration and prepares source files.
-	Returns a Configuration instance and a list of TagInfo instances.
-	Before instantiating TagInfo, 'mktag' is applied to the filename.
+	Prints options and configuration.
 	"""
-	options = config.Configuration(cfg)
-	args    = options.parseArguments(argv)
-
-	if not args:
-		options.help()
-		sys.exit(1)
-
-
 	print "\033[33m"
 
 	if len(options.cfg_files) == 0:
@@ -284,19 +247,44 @@ def start(argv, mktag, cfg=''):
 		print "Multi-Artist (use -1 to use single artist pattern)"
 	
 	print "Target directory:", options.target_dir, "(change with -t DIRECTORY)"
-	print "\nSource(s):", args
 	print "\033[0m"
 	
+	if options.verbose:
+		print "FILE PATTERN  :", options.newpath
+		print "TRACK PATTERN :", options.trackstyle
+		print "YEAR PATTERN  :", options.yearstyle
+		print "ALBUM PATTERN  :", options.albumstyle
+		print
+
+
+def run(argv, mktag, cfg=''):
+	"""
+	Parses 'argv', loads configuration and prepares source files.
+	Returns a Configuration instance and a list of TagInfo instances.
+	To instantiate TagInfo, 'mktag' is applied to the filename first.
+	"""
+	options = config.Configuration(cfg)
+	args    = options.parseArguments(argv)
+
+	if not args:
+		options.help()
+		sys.exit(1)
 	
-	sources = []
-	for f in args:
-		if os.path.isfile(f):
-			try:
-				sources.append(TagInfo(mktag(f), options))
-			except ValueError:
-				print "Filetype of %s not supported." % sourcefile
+	print_overview(options)
+	print "Source(s):", args, "\n"
 	
-		elif os.path.isdir(f):
-			args.extend(file_listing(f, config.file_extensions))
-			
-	return (options, sources)
+	try:
+		for f in args:
+			if os.path.isfile(f):
+				try:
+					source = TagInfo(mktag(f), options)
+				except ValueError:
+					print "Filetype of %s not supported." % f
+				else:
+					process_file(source, options)
+		
+			elif os.path.isdir(f):
+				args.extend(file_listing(f, config.file_extensions))
+	except KeyboardInterrupt:
+		print 'Quit.'
+	
