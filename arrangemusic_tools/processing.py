@@ -284,14 +284,18 @@ def start(argv, mktag, cfg=''):
 		print "Multi-Artist (use -1 to use single artist pattern)"
 	
 	print "Target directory:", options.target_dir, "(change with -t DIRECTORY)"
+	print "\nSource(s):", args
 	print "\033[0m"
 	
-	print "\nSource(s):"
+	
 	sources = []
 	for f in args:
 		if os.path.isfile(f):
-			print f, 
-			sources.append(TagInfo(mktag(f), options))
+			try:
+				sources.append(TagInfo(mktag(f), options))
+			except ValueError:
+				print "Filetype of %s not supported." % sourcefile
+	
 		elif os.path.isdir(f):
 			args.extend(file_listing(f, config.file_extensions))
 			
