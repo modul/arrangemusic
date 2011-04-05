@@ -67,3 +67,10 @@ message.
 * everything under git control now
 * finds flac files now as well
 * from here on, read git log
+
+2011/04/05 v0.4/v0.4.1
+* Changelog is still handy
+* complete rewrite (branch dev)
+* unittests (well, few)
+* using python to find files
+* instead of single/multiartist patterns, multiple (n) user-definable patterns are possible now
