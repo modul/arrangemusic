@@ -69,16 +69,16 @@ class TestConfig(unittest.TestCase):
 	
 	def test_config_arg_parse(self):
 		options = self.options
-		argv = ["-nm2", "file"]
+		argv = ["-nm","-p","multi", "file"]
 		
+		self.assertEqual(options.pattern, 'default')
 		self.assertFalse(options.dryrun)
 		self.assertFalse(options.move)
-		self.assertFalse(options.multiartist)
-		
+				
 		files = options.parseArguments(argv)
+		self.assertEqual(options.pattern, 'multi')
 		self.assertTrue(options.dryrun)
 		self.assertTrue(options.move)
-		self.assertTrue(options.multiartist)
 		
 		self.assertEqual(files, ['file'])
 	

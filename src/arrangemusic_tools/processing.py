@@ -240,8 +240,7 @@ def print_overview(options):
 		print "Verbose (use -q to stop spam)" 
 	if options.move:
 		print "Removing source files (use -M to keep them)"
-	if options.multiartist:
-		print "Multi-Artist (use -1 to use single artist pattern)"
+	print "Using '{pat}' pattern (change with -p)".format(pat=options.pattern)
 	
 	print "Target directory:", options.target_dir, "(change with -t DIRECTORY)"
 	print "\033[0m"

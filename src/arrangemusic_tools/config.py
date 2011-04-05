@@ -42,7 +42,7 @@ class Configuration(object):
 		self.move         = False
 		self.interactive  = False
 		self.target_dir   = "./"
-		self.multiartist  = False
+		self.pattern      = "default"
 		self.replacements = {}
 		self.unk_artist   = "Unknown Artist"
 		self.unk_title    = "Unknown Title"
@@ -65,8 +65,8 @@ class Configuration(object):
 			if self.cfg.has_option("commandline", "target"):
 				self.target_dir = self.cfg.get("commandline", "target")
 				
-			if self.cfg.has_option("commandline", "multiartist"):
-				self.multiartist = self.cfg.getboolean("commandline", "multiartist")
+			if self.cfg.has_option("commandline", "pattern"):
+				self.pattern = self.cfg.get("commandline", "pattern")
 				
 			if self.cfg.has_option("replacements", "replace"):
 				self.replacements = eval(self.cfg.get("replacements", "replace"))
@@ -79,7 +79,8 @@ class Configuration(object):
 				
 			if self.cfg.has_option("replacements", "no-genre"):
 				self.no_genre = self.cfg.get("replacements", "no-genre")
-			
+		
+		
 		self._setupPattern()
 		self._setupOptions()
 
@@ -88,12 +89,8 @@ class Configuration(object):
 		"""
 		Load rename pattern.
 		"""
-	
-		if self.multiartist is True:
-			pattern = "multiartist"
-		else:
-			pattern = "singleartist"
-			
+		pattern = self.pattern
+		
 		self.ignore_articles = False
 		self.common_articles = ['The']
 		self.trackstyle  = "{track}."
@@ -101,8 +98,7 @@ class Configuration(object):
 		self.yearstyle   = "{year}-"
 		self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}{extension}"
 		self.initial_num = "first"
-		if pattern == "multiartist":
-			self.newpath = "{albumstyle}/{trackstyle}{artist}-{title}{extension}"
+		
 			
 		if len(self.cfg_files) > 0:
 			if self.cfg.has_option(pattern, "ignore-articles"):
@@ -167,12 +163,10 @@ class Configuration(object):
 		 
 		patterngroup = optparse.OptionGroup(self.parser, "Patterns")
 		
-		patterngroup.add_option("-1", "--singleartist", 
-		 help="use single artist pattern",
-		 action="store_false", dest="multiartist", default=self.multiartist)
-		patterngroup.add_option("-2", "--multiartist", 
-		 help="use multi artist pattern",
-		 action="store_true", dest="multiartist", default=self.multiartist)
+		patterngroup.add_option("-p", "--pattern", 
+		 help="load PATTERN from configuration (other as default)",
+		 metavar="PATTERN", dest="pattern", default=self.pattern)
+				
 		 
 		self.parser.add_option_group(actiongroup)
 		self.parser.add_option_group(targetgroup)
@@ -192,17 +186,17 @@ class Configuration(object):
 			else:
 				cfg = self.cfg_files[0]
 		
-		epilog += "{verbose}{ask}{dry}{move}{multi} Target directory: {target}  "
-		epilog += "Rename pattern: {pattern}"	
+		epilog += "{verbose}{ask}{dry}{move}{pattern} Target directory: {target}  "
+		epilog += "Rename pattern: {path}"	
 		
 		fmt = {'cfg': cfg,
 		'verbose': self.verbose and 'verbose, ' or '',
 		'ask': self.interactive and 'interactive, ' or '',
 		'dry': self.dryrun and '' or 'dry-run, ',
 		'move': self.move and 'move files, ' or '',
-		'multi': self.multiartist and 'multiartist.' or '',
+		'pattern': self.pattern,
 		'target': self.target_dir or './',
-		'pattern': self.newpath
+		'path': self.newpath
 		}
 		
 		epilog = epilog.format(**fmt)
@@ -234,8 +228,8 @@ class Configuration(object):
 		self.dryrun      = options.dryrun
 		self.move        = options.move
 		
-		if self.multiartist != options.multiartist:
-			self.multiartist = options.multiartist
+		if self.pattern != options.pattern:
+			self.pattern = options.pattern
 			self._setupPattern()
 		
 		return args
