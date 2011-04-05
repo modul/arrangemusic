@@ -9,11 +9,8 @@
 # created: 2011/04/04
 #
 
-
-
 import sys, os, shutil
 import config
-
 
 class TagInfo(object):
 	"""
@@ -285,6 +282,9 @@ def run(argv, mktag, cfg=''):
 		
 			elif os.path.isdir(f):
 				args.extend(file_listing(f, config.file_extensions))
+			else:
+				print "No such file", f
+				
 	except KeyboardInterrupt:
 		print 'Quit.'
 	
