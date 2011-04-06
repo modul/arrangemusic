@@ -68,7 +68,7 @@ message.
 * finds flac files now as well
 * from here on, read git log
 
-2011/04/05 v0.4/v0.4.1
+2011/04/05 v0.4
 * Changelog is still handy
 * complete rewrite (branch dev)
 * unittests (well, few)
