@@ -80,7 +80,7 @@ class Arranger(object):
 		else:
 			answers = ('y', 'yes') # positive answers
 	
-		if raw_input(question).lowercase() not in answers:
+		if raw_input(question).lower() not in answers:
 			return default
 		else:
 			return not default

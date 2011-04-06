@@ -1,106 +1,112 @@
 # -*- coding: utf8 -*-
 
 import os
-import unittest
+import shutil
+
 from arrangemusic_tools import processing, config
 from mock import *
 
+def setup():
+	assert os.path.isfile('test.cfg'), "Must be run inside tests/, where test.cfg lies"	
+	options = config.Configuration()
+	options.read('test.cfg')
 
+def make_my_tag():
+	tagm = TagGenerator(artist="test", title="file", year=2001, genre="", album="Test Case").next("testfile.mp3")
+	return tagm
 
+def test_config_is_singleton():
+	a = config.Configuration()
+	b = config.Configuration()
+	sth = a.interactive
+	assert id(a) == id(b)
+	b.interactive = not sth
+	del a, b
+	c = config.Configuration()
+	assert c.interactive is not sth
+	c.interactive = sth
 
-class TestConfig(unittest.TestCase):
+def test_config_and_parser():
+	options = config.Configuration()
+	assert options.pattern == 'default'
+	assert  options.dryrun is False
+	assert options.move is False
 			
-	def test_config_arg_parse(self):
-		options = config.Configuration()
-		options.read('test.cfg')
-				
-		self.assertEqual(options.pattern, 'default')
-		self.assertFalse(options.dryrun)
-		self.assertFalse(options.move)
-				
-		parser = config.CmdlineParser()
-		argv = ["-nm","-p","multi", "file"]
-		files = parser.parse(argv)
-		self.assertEqual(options.pattern, 'multi')
-		self.assertTrue(options.dryrun)
-		self.assertTrue(options.move)
-		
-		self.assertEqual(files, ['file'])
-	
-	def test_config_singleton(self):
-		self.assertTrue(id(config.Configuration()) == id(config.Configuration()))
-	
+	parser = config.CmdlineParser()
+	argv = ["-nm","-p","multi", "file"]
+	files = parser.parse(argv)
 
-		
-class TestArrangeMusic(unittest.TestCase):
-	
-	def setUp(self):
-		self.options = config.Configuration()
-		self.options.read('test.cfg')
-		self.tagm = TagPyFileRefMock("testfile.mp3")
-		self.tagm.settag(artist="test", title="file", track=0, year=2001, genre="", album="Test Case")
-	
-	def test_tagInfo(self):
-		tagm = self.tagm
-				
-		tag = processing.Arranger(tagm)
-		self.assertEqual(tag.artist, 'Test')
-		self.assertEqual(tag.title, 'File')
-		self.assertEqual(tag.track, '')
-		self.assertEqual(tag.year, 2001)
-		self.assertEqual(tag.genre, 'No Genre')
-		self.assertEqual(tag.album, 'Test Case')
-		self.assertEqual(tag.filename, "testfile.mp3")
-		self.assertEqual(tag.extension, "mp3")
-		
-		path = tag.makePath()
-		self.assertEqual(path, "T/Test/2001-Test_Case/File.mp3")
-		
-		tagm.settag(year=0)
-		tag = processing.Arranger(tagm)
-		self.assertEqual(tag.year, '')
-		
-		tagm.filename = "mh.fac"
-		tagm.settag(title="whatever you want", track=5, artist="Test")
-		tag = processing.Arranger(tagm)
-		path = tag.makePath()
-		self.assertEqual(path, "T/Test//05.Whatever_You_Want.")
-		
-		tagm.filename = u"höher.mp3"
-		tagm.settag(title=u"Höher…", track=0, artist=u"Pilot", album=u"Über den Wolken")
-		tag = processing.Arranger(tagm)
-		path = tag.makePath()
-		self.assertEqual(path, "P/Pilot/Über_Den_Wolken/Höher….mp3")
-		
-	
-	def test_file_listing(self):
-		exts = ['.py']
-		listing = processing.file_listing('.', exts)
-		self.assertTrue('./runtests.py' in listing)
-		self.assertTrue('./tests.py' in listing)
-		self.assertFalse('./tests.pyc' in listing)
+	assert options.pattern == 'multi'
+	assert options.dryrun is True
+	assert options.move is True
+	assert files == ['file']
 
+	argv = ['-c', '-p', 'internal']
+	files = parser.parse(argv)
 
-	def test_commandline_process(self):
-		tagm = self.tagm
-		tag = processing.Arranger(tagm)
-		argv = ["-vt", "/tmp", "testfile.mp3"]
-		options = config.Configuration()
-		parser  = config.CmdlineParser()
-		files   = parser.parse(argv)
-		self.assertTrue(options.verbose)
-		self.assertEqual(options.target_dir, "/tmp")
-		self.assertEqual(files, ["testfile.mp3"])
-		
-		path = tag.makePath()
-		self.assertEqual(path, "T/Test/2001-Test_Case/File.mp3")
+	assert options.pattern == 'default'
+	assert options.dryrun is False # option default
+	assert options.move is False
+	assert files == []
+
+def test_arranger_taghandling():
+	tagm = make_my_tag()
+	tag = processing.Arranger(tagm)
+	assert tag.artist == 'Test'
+	assert tag.title == 'File'
+	assert tag.track == '01'
+	assert tag.year == 2001
+	assert tag.genre == 'No Genre'
+	assert tag.album == 'Test Case'
+	assert tag.filename == 'testfile.mp3'
+	assert tag.extension == 'mp3'
 	
+	tagm.settag(year=0)
+	tag = processing.Arranger(tagm)
+	assert tag.year == ''
+
+def test_arranger_mkpath():
+	tagm = make_my_tag()
+	tag = processing.Arranger(tagm)
+	path = tag.makePath()
+	print path
+	assert path == "T/Test/2001-Test_Case/01.File.mp3"
 	
-	def test_run(self):
-		print
-		argv = ['-n', './']
-		gen = TagGenerator(artist='The Wall', album='Bricks', title=u'Who’s number {track}?')
-		processing.run(argv, gen.next)
-		
-		
-		
+	tagm.filename = "mh.fac"
+	tagm.settag(title="whatever you want", track=5, artist="Test")
+	tag = processing.Arranger(tagm)
+	path = tag.makePath()
+	assert path == "T/Test//05.Whatever_You_Want."
+	
+	tagm.filename = u"höher.mp3"
+	tagm.settag(title=u"Höher…", track=0, artist=u"Pilot", album=u"Über den Wolken")
+	tag = processing.Arranger(tagm)
+	path = tag.makePath()
+	assert path == "P/Pilot/Über_Den_Wolken/Höher….mp3"
+	
+def test_file_listing():
+	exts = ['.py']
+	listing = processing.file_listing('.', exts)
+	assert './mock.py' in listing
+	assert './tests.py' in listing
+	assert './tests.pyc' not in listing
+
+def test_dryrun():
+	argv = ['-nv', './']
+	gen = TagGenerator(artist='The Wall', album='Bricks', title=u'Who’s number {track}?')
+	processing.run(argv, gen.next)
+
+def test_run_virtualmusic():
+	argv = ['-vcd', '-t', 'virtualmusic', './']
+	gen = TagGenerator(artist='The Wall', album='Bricks', title=u'Who’s number {track}?')
+	processing.run(argv, gen.next)
+	assert os.path.isdir('virtualmusic/W/') is True
+
+def test_no_wmafiles():
+	listing = processing.file_listing('virtualmusic/W', ['wma'])
+	assert listing == []
+
+def teardown():
+	if os.path.isdir('virtualmusic/W'):
+		shutil.rmtree('virtualmusic/W/')
+		assert os.path.isdir('virtualmusic/W') is False
