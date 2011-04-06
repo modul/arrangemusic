@@ -3,7 +3,7 @@
 
 import unittest, doctest
 import tests
-from arrangemusic_tools import config, processing, singleton
+from arrangemusic_tools import config, processing, tools
 
 if __name__ == '__main__':
 	print "TESTING HELP"
@@ -11,8 +11,7 @@ if __name__ == '__main__':
 	print
 	
 	print "RUNNING DOCTESTS"
-	print "in processing"
-	suite = doctest.DocTestSuite(processing)
+	suite = doctest.DocTestSuite(tools)
 	unittest.TextTestRunner(verbosity=2).run(suite)
 	
 	print "RUNNING TESTCASES"
