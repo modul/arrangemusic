@@ -1,103 +1,50 @@
 # -*- coding: utf8 -*-
 
-import unittest, doctest
-from arrangemusic_tools import processing, config
 import os
-
-class TagPyFileRefMock(object):
-	def __init__(self, filename):
-		self.filename = filename
-		self.tagdict = {}
-	
-	def settag(self, **kwargs):
-		self.tagdict = kwargs
-	
-	def tag(self):
-		return TagPyTagMock(**self.tagdict)
-		
-	def file(self):
-		return TagPyFileMock(self.filename)
-		
-
-class TagPyTagMock(object):
-	def __init__(self, **kwargs):
-		self.artist = ""
-		self.album  = ""
-		self.genre  = ""
-		self.track  = 0
-		self.title  = ""
-		self.year   = 0
-		
-		for k, v in kwargs.items():
-			if self.__dict__.has_key(k):
-				self.__dict__[k] = v
+import unittest
+from arrangemusic_tools import processing, config
+from mock import *
 
 
-class TagPyFileMock(object):
-	def __init__(self, filename):
-		self.filename = filename
-	def name(self):
-		return self.filename
-
-
-class taggenerator(object):
-	def __init__(self, **kwargs):
-		self.artist = ''
-		self.title = ''
-		self.album = ''
-		self.year = 0
-		self.genre = ''
-		self.track = 0
-		
-		for k, v in kwargs.items():
-			if self.__dict__.has_key(k):
-				self.__dict__[k] = v
-		
-	def next(self, filename):
-		self.track += 1
-		title = self.title.format(track=self.track)
-		
-		tag = TagPyFileRefMock(filename)
-		tag.settag(artist=self.artist, title=title, album=self.album, year=self.year, genre=self.genre, track=self.track)
-		return tag
 
 
 class TestConfig(unittest.TestCase):
-	
-	def setUp(self):
-		self.options = config.Configuration('test.cfg')
-	
+			
 	def test_config_arg_parse(self):
-		options = self.options
+		options = config.Configuration()
+		options.read('test.cfg')
+		parser = config.CmdlineParser()
 		argv = ["-nm","-p","multi", "file"]
 		
 		self.assertEqual(options.pattern, 'default')
 		self.assertFalse(options.dryrun)
 		self.assertFalse(options.move)
 				
-		files = options.parseArguments(argv)
+		files = parser.parse(argv)
 		self.assertEqual(options.pattern, 'multi')
 		self.assertTrue(options.dryrun)
 		self.assertTrue(options.move)
 		
 		self.assertEqual(files, ['file'])
 	
-	#def test_config_print_help(self):
-		#self.options.help()
+	def test_config_singleton(self):
+		self.assertTrue(id(config.Configuration()) == id(config.Configuration()))
 	
 
 		
 class TestArrangeMusic(unittest.TestCase):
 	
 	def setUp(self):
-		self.options = config.Configuration('test.cfg')
+		self.options = config.Configuration()
+		self.options.read('test.cfg')
 		self.tagm = TagPyFileRefMock("testfile.mp3")
 		self.tagm.settag(artist="test", title="file", track=0, year=2001, genre="", album="Test Case")
+		print self.options.pattern
 	
 	def test_tagInfo(self):
 		tagm = self.tagm
 				
-		tag = processing.TagInfo(tagm, self.options)
+		tag = processing.TagInfo(tagm)
 		self.assertEqual(tag.artist, 'Test')
 		self.assertEqual(tag.title, 'File')
 		self.assertEqual(tag.track, '')
@@ -111,18 +58,18 @@ class TestArrangeMusic(unittest.TestCase):
 		self.assertEqual(path, "T/Test/2001-Test_Case/File.mp3")
 		
 		tagm.settag(year=0)
-		tag = processing.TagInfo(tagm, self.options)
+		tag = processing.TagInfo(tagm)
 		self.assertEqual(tag.year, '')
 		
 		tagm.filename = "mh.fac"
 		tagm.settag(title="whatever you want", track=5, artist="Test")
-		tag = processing.TagInfo(tagm, self.options)
+		tag = processing.TagInfo(tagm)
 		path = tag.makePath()
 		self.assertEqual(path, "T/Test//05.Whatever_You_Want.")
 		
 		tagm.filename = u"höher.mp3"
 		tagm.settag(title=u"Höher…", track=0, artist=u"Pilot", album=u"Über den Wolken")
-		tag = processing.TagInfo(tagm, self.options)
+		tag = processing.TagInfo(tagm)
 		path = tag.makePath()
 		self.assertEqual(path, "P/Pilot/Über_Den_Wolken/Höher….mp3")
 		
@@ -137,10 +84,11 @@ class TestArrangeMusic(unittest.TestCase):
 
 	def test_commandline_process_file(self):
 		tagm = self.tagm
-		tag = processing.TagInfo(tagm, self.options)
+		tag = processing.TagInfo(tagm)
 		argv = ["-vt", "/tmp", "testfile.mp3"]
-		options = self.options
-		files = options.parseArguments(argv)
+		options = config.Configuration()
+		parser  = config.CmdlineParser()
+		files   = parser.parse(argv)
 		self.assertTrue(options.verbose)
 		self.assertEqual(options.target_dir, "/tmp")
 		self.assertEqual(files, ["testfile.mp3"])
@@ -152,8 +100,8 @@ class TestArrangeMusic(unittest.TestCase):
 	def test_run(self):
 		print
 		argv = ['-n', './']
-		gen = taggenerator(artist='The Wall', album='Bricks', title=u'Who’s number {track}?')
-		processing.run(argv, gen.next, 'test.cfg')
+		gen = TagGenerator(artist='The Wall', album='Bricks', title=u'Who’s number {track}?')
+		processing.run(argv, gen.next)
 		
 		
 		
