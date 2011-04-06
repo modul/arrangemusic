@@ -1,3 +1,10 @@
+2011/04/06 v0.4.1
+
+* some code updates and fixes
+* made configuration a singleton opject
+* more object orientation
+* code cleannig
+
 2011/04/05 v0.4
 
 * Changelog is still handy
