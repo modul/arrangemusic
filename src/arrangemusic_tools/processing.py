@@ -12,9 +12,9 @@
 import sys, os, shutil
 import config
 
-class TagInfo(object):
+class Arranger(object):
 	"""
-	Loads tag information and prepares and processes it.
+	Loads tag information, prepares it and moves the file.
 	"""
 	
 	def __init__(self, tagfileref):
@@ -68,12 +68,25 @@ class TagInfo(object):
 			else:
 				self.first_letter = c
 	
+	def __ask_yesno(self, question, default=False):
+		"""
+		Base method to ask the user a yes/no question.
+		'default' marks the default answer (False means 'no').
+		"""
+		if default is True:
+			answers = ('n', 'no') # negative answers
+		else:
+			answers = ('y', 'yes') # positive answers
+	
+		if raw_input(question).lowercase() not in answers:
+			return default
+		else:
+			return not default
 	
 	def makePath(self):
 		"""
 		Perform pattern substitutions and construct a new file path.
 		"""
-	
 		artist = replace(self.artist, self.options.replacements)
 		title  = replace(self.title, self.options.replacements)
 		genre  = replace(self.genre, self.options.replacements)
@@ -117,6 +130,49 @@ class TagInfo(object):
 			return ''
 		else:
 			return path
+			
+	def run(self):
+		"""
+		Copies or moves the file.
+		"""
+		options = config.Configuration()
+		do = not self.options.dryrun
+		dest = self.makePath()
+		path = os.path.join(self.options.target_dir, dest)
+				
+		if self.options.verbose:	
+			print "\nARTIST : %s -> %s" % (self.old_artist, self.artist)
+			print "ALBUM  : %s -> %s" % (self.old_album, self.album)
+			print "TITLE  : %s -> %s" % (self.old_title, self.title)
+			print "GENRE  : %s -> %s" % (self.old_genre, self.genre)
+			print "TRACK  :", self.track
+			print "TARGET :", self.options.target_dir
+			print "DIR    :", os.path.dirname(path)
+			print "FILE   : %s -> %s\n" % (self.filename, os.path.basename(path))
+		
+		print os.path.basename(self.filename), "->\033[32m", dest, "\033[0m"
+		
+		if do \
+		  and self.options.interactive \
+		  and self.__ask_yesno("Is that OK? [Y/n] ", True) is False:
+			do = False
+		
+		if do:
+			target = os.path.dirname(path)
+			if not os.path.isdir(target):
+				os.makedirs(target)
+			if os.path.isfile(path):
+				if not self.__ask_yesno("File exists, overwrite? [N/y] ", False):
+					do = False
+				else:
+					print "ok."
+			if do:
+				if self.options.move:
+					shutil.move(self.filename, path)
+				else:
+					shutil.copy(self.filename, path)
+		else: 
+			print "Not done."
 		
 
 def get_first(s, matches):
@@ -183,51 +239,12 @@ def file_listing(directory, extensions):
 	return results
 
 
-def process_file(source):
-	"""
-	Copies or moves a file described by 'source' (TagInfo instance).
-	"""
-	options = config.Configuration()
-	do = not options.dryrun
-	dest = source.makePath()
-	path = os.path.join(options.target_dir, dest)
-			
-	if options.verbose:	
-		print "\nARTIST : %s -> %s" % (source.old_artist, source.artist)
-		print "ALBUM  : %s -> %s" % (source.old_album, source.album)
-		print "TITLE  : %s -> %s" % (source.old_title, source.title)
-		print "GENRE  : %s -> %s" % (source.old_genre, source.genre)
-		print "TRACK  :", source.track
-		print "TARGET :", options.target_dir
-		print "DIR    :", os.path.dirname(path)
-		print "FILE   : %s -> %s\n" % (source.filename, os.path.basename(path))
-	
-	print os.path.basename(source.filename), "->\033[32m", dest, "\033[0m"
-	
-	if options.interactive and do and raw_input("Is that OK? [Y/n] ") not in ('Y', 'y', ''):
-		do = False
-	
-	if do:
-		target = os.path.dirname(path)
-		if not os.path.isdir(target):
-			os.makedirs(target)
-		if os.path.isfile(path):
-			if raw_input("File exists, overwrite? [N/y] ") not in ("y", "Y"):
-				print "Not overwriting."
-				do = False
-		if do:
-			if options.move:
-				shutil.move(source.filename, path)
-			else:
-				shutil.copy(source.filename, path)
-	else: 
-		print "Not done."
 
-
-def print_overview(options):
+def print_overview():
 	"""
 	Prints options and configuration.
 	"""
+	options = config.Configuration()
 	print "\033[33m"
 
 	if len(options.cfg_files) == 0:
@@ -255,8 +272,8 @@ def print_overview(options):
 
 def run(argv, mktag):
 	"""
-	Parses 'argv', loads configuration and prepares source files.
-	To instantiate TagInfo, 'mktag' is applied to the filename first.
+	Parses 'argv', updates configuration and prepares source files.
+	To instantiate Arranger, 'mktag' is applied to the filename first.
 	"""
 	options = config.Configuration()
 	parser  = config.CmdlineParser()
@@ -266,18 +283,18 @@ def run(argv, mktag):
 		parser.help()
 		sys.exit(1)
 	
-	print_overview(options)
+	print_overview()
 	print "Source(s):", args, "\n"
 	
 	try:
 		for f in args:
 			if os.path.isfile(f):
 				try:
-					source = TagInfo(mktag(f))
+					arranger = Arranger(mktag(f))
 				except ValueError:
 					print "Filetype of %s not supported." % f
 				else:
-					process_file(source)
+					arranger.run()
 		
 			elif os.path.isdir(f):
 				args.extend(file_listing(f, config.file_extensions))
