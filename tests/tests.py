@@ -43,7 +43,7 @@ class TestArrangeMusic(unittest.TestCase):
 	def test_tagInfo(self):
 		tagm = self.tagm
 				
-		tag = processing.TagInfo(tagm)
+		tag = processing.Arranger(tagm)
 		self.assertEqual(tag.artist, 'Test')
 		self.assertEqual(tag.title, 'File')
 		self.assertEqual(tag.track, '')
@@ -57,18 +57,18 @@ class TestArrangeMusic(unittest.TestCase):
 		self.assertEqual(path, "T/Test/2001-Test_Case/File.mp3")
 		
 		tagm.settag(year=0)
-		tag = processing.TagInfo(tagm)
+		tag = processing.Arranger(tagm)
 		self.assertEqual(tag.year, '')
 		
 		tagm.filename = "mh.fac"
 		tagm.settag(title="whatever you want", track=5, artist="Test")
-		tag = processing.TagInfo(tagm)
+		tag = processing.Arranger(tagm)
 		path = tag.makePath()
 		self.assertEqual(path, "T/Test//05.Whatever_You_Want.")
 		
 		tagm.filename = u"höher.mp3"
 		tagm.settag(title=u"Höher…", track=0, artist=u"Pilot", album=u"Über den Wolken")
-		tag = processing.TagInfo(tagm)
+		tag = processing.Arranger(tagm)
 		path = tag.makePath()
 		self.assertEqual(path, "P/Pilot/Über_Den_Wolken/Höher….mp3")
 		
@@ -81,9 +81,9 @@ class TestArrangeMusic(unittest.TestCase):
 		self.assertFalse('./tests.pyc' in listing)
 
 
-	def test_commandline_process_file(self):
+	def test_commandline_process(self):
 		tagm = self.tagm
-		tag = processing.TagInfo(tagm)
+		tag = processing.Arranger(tagm)
 		argv = ["-vt", "/tmp", "testfile.mp3"]
 		options = config.Configuration()
 		parser  = config.CmdlineParser()
