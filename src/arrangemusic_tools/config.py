@@ -1,17 +1,21 @@
- # -*- coding: utf8 -*-
- #
- # Arrangemusic - config.py
- # 
- # Configuration file loading and commandline parsing is done here. 
- # Internal defaults and options are also here. 
- #
- # author: Remo Giermann <mo@liberejo.de>
- # created: 2010/04/04
- #
+# -*- coding: utf8 -*-
+#
+# Arrangemusic - config.py
+# 
+# Configuration file loading and commandline parsing is done here. 
+# Internal defaults and options are also here. 
+#
+# author: Remo Giermann <mo@liberejo.de>
+# created: 2010/04/04
+#
  
 import os
+import sys
 import optparse
 from ConfigParser import ConfigParser
+
+from singleton import Singleton
+ 
  
 version = "v0.4.1"
 
@@ -21,21 +25,19 @@ user_cfg = os.path.expanduser("~/.arrangemusic.cfg")
 default_cfg = "/usr/local/share/arrangemusic/default.cfg"
 
 
-class Configuration(object):
+class _Configuration(Singleton):
 	"""
 	Loads configuration file(s) and acts as a simple options container.
-	
-	>>> options = Configuration()
-	>>> options.newpath
-	'{artist}/{albumstyle}/{trackstyle}{title}{extension}'
+	Do not instantiate this class, use Configuration() instead.
 	"""
 	
-	def __init__(self, cfg=''):
+	def __init__(self):
 		"""
 		Load configuration and setup attributes.
 		"""
 		self.cfg = ConfigParser()
-		self.cfg_files = self.cfg.read([default_cfg, user_cfg, cfg])
+		self.cfg_files = []
+		self.read(default_cfg, user_cfg)
 		
 		self.verbose      = False
 		self.dryrun       = True
@@ -48,8 +50,46 @@ class Configuration(object):
 		self.unk_title    = "Unknown Title"
 		self.no_genre     = "No genre"
 		
+		self._setupPattern()
 
-		if self.cfg_files:
+	def _setupPattern(self):
+		"""
+		Load rename pattern.
+		"""
+		pattern = self.pattern
+		
+		self.ignore_articles = False
+		self.common_articles = ['The']
+		self.trackstyle  = "{track}."
+		self.albumstyle  = "{yearstyle}{album}"
+		self.yearstyle   = "{year}-"
+		self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}{extension}"
+		self.initial_num = "first"
+		
+		if self.cfg.has_option(pattern, "ignore-articles"):
+			self.ignore_articles = self.cfg.getboolean(pattern, "ignore-articles")
+		if self.cfg.has_option(pattern, "common-articles"):
+			self.common_articles = self.cfg.get(pattern, "common-articles").split(',')
+		if self.cfg.has_option(pattern, "trackstyle"):
+			self.trackstyle  = self.cfg.get(pattern, "trackstyle")
+		if self.cfg.has_option(pattern, "albumstyle"):
+			self.albumstyle  = self.cfg.get(pattern, "albumstyle")
+		if self.cfg.has_option(pattern, "yearstyle"):
+			self.yearstyle   = self.cfg.get(pattern, "yearstyle")
+		if self.cfg.has_option(pattern, "new-path"):
+			self.newpath     = self.cfg.get(pattern, "new-path")
+		if self.cfg.has_option(pattern, "initial-of-number"):
+			self.initial_num = self.cfg.get(pattern, "initial-of-number")
+		
+	def read(self, *args):
+		"""
+		Reads one or more additional configuration files and updates options.
+		"""
+		for cfgfile in args:
+			if not cfgfile in self.cfg_files:
+				self.cfg_files.extend(self.cfg.read(cfgfile))
+		
+		if len(self.cfg_files) > 0:
 			if self.cfg.has_option("commandline", "verbose"):
 				self.verbose = self.cfg.getboolean("commandline", "verbose")
 				
@@ -79,52 +119,28 @@ class Configuration(object):
 				
 			if self.cfg.has_option("replacements", "no-genre"):
 				self.no_genre = self.cfg.get("replacements", "no-genre")
-		
-		
-		self._setupPattern()
-		self._setupOptions()
-
-
-	def _setupPattern(self):
-		"""
-		Load rename pattern.
-		"""
-		pattern = self.pattern
-		
-		self.ignore_articles = False
-		self.common_articles = ['The']
-		self.trackstyle  = "{track}."
-		self.albumstyle  = "{yearstyle}{album}"
-		self.yearstyle   = "{year}-"
-		self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}{extension}"
-		self.initial_num = "first"
-		
-			
-		if len(self.cfg_files) > 0:
-			if self.cfg.has_option(pattern, "ignore-articles"):
-				self.ignore_articles = self.cfg.getboolean(pattern, "ignore-articles")
-			if self.cfg.has_option(pattern, "common-articles"):
-				self.common_articles = self.cfg.get(pattern, "common-articles").split(',')
-			if self.cfg.has_option(pattern, "trackstyle"):
-				self.trackstyle  = self.cfg.get(pattern, "trackstyle")
-			if self.cfg.has_option(pattern, "albumstyle"):
-				self.albumstyle  = self.cfg.get(pattern, "albumstyle")
-			if self.cfg.has_option(pattern, "yearstyle"):
-				self.yearstyle   = self.cfg.get(pattern, "yearstyle")
-			if self.cfg.has_option(pattern, "new-path"):
-				self.newpath     = self.cfg.get(pattern, "new-path")
-			if self.cfg.has_option(pattern, "initial-of-number"):
-				self.initial_num = self.cfg.get(pattern, "initial-of-number")
 	
+Configuration = _Configuration.getInstance
+
+
+class CmdlineParser(object):
+	"""
+	Sets up commandline options and parses an argument list.
+	"""
+	
+	def __init__(self):
+		usage = "%prog [options] soure files/source directories ..."
+		versn = "%prog "+version
+		
+		self.parser = optparse.OptionParser(usage=usage, version=versn)
+		self._setupOptions()
 	
 	def _setupOptions(self):
 		"""
 		Setup commandline parser.
 		"""
-		usage = "%prog [options] soure files/source directories ..."
-		versn = "%prog "+version
+		conf = Configuration()
 		
-		self.parser = optparse.OptionParser(usage=usage, version=versn)
 		self.parser.add_option("-f", "--configfile", help="use another configuration",
 		 metavar='FILE', dest="conf", default='')
 		
@@ -132,78 +148,73 @@ class Configuration(object):
 		
 		actiongroup.add_option("-i", "--interactive", 
 		  help="ask before doing anything", 
-		  action="store_true", dest="interactive", default=self.interactive)
+		  action="store_true", dest="interactive", default=conf.interactive)
 		actiongroup.add_option("-I", "--non-interactive", 
 		  help="don't ask",
-		  action="store_false", dest="interactive", default=self.interactive)
+		  action="store_false", dest="interactive", default=conf.interactive)
 		actiongroup.add_option("-n", "--dry-run", 
 		 help="just pretend actions",
-		 action="store_true", dest="dryrun", default=self.dryrun)
+		 action="store_true", dest="dryrun", default=conf.dryrun)
 		actiongroup.add_option("-d", "--do-it", 
 		 help="don't pretend actions",
-		 action="store_false", dest="dryrun", default=self.dryrun)
+		 action="store_false", dest="dryrun", default=conf.dryrun)
 		actiongroup.add_option("-v", "--verbose", 
 		 help="print more information",
-		 action="store_true", dest="verbose", default=self.verbose)
+		 action="store_true", dest="verbose", default=conf.verbose)
 		actiongroup.add_option("-q", "--quiet", 
 		 help="print less information",
-		 action="store_false", dest="verbose", default=self.verbose)
+		 action="store_false", dest="verbose", default=conf.verbose)
 		
 		targetgroup = optparse.OptionGroup(self.parser, "Target files")
 
 		targetgroup.add_option("-m", "--move", 
 		 help="move files (remove source files)",
-		 action="store_true", dest="move", default=self.move)
+		 action="store_true", dest="move", default=conf.move)
 		targetgroup.add_option("-c", "--copy", 
 		 help="copy files",
-		 action="store_false", dest="move", default=self.move)
+		 action="store_false", dest="move", default=conf.move)
 		targetgroup.add_option("-t", "--target", 
 		 help="move/copy files to DIRECTORY",
-		 metavar="DIRECTORY", dest="target_dir", default=self.target_dir)
+		 metavar="DIRECTORY", dest="target_dir", default=conf.target_dir)
 		 
 		patterngroup = optparse.OptionGroup(self.parser, "Patterns")
 		
 		patterngroup.add_option("-p", "--pattern", 
 		 help="load PATTERN from configuration (other as default)",
-		 metavar="PATTERN", dest="pattern", default=self.pattern)
+		 metavar="PATTERN", dest="pattern", default=conf.pattern)
 				
-		 
 		self.parser.add_option_group(actiongroup)
 		self.parser.add_option_group(targetgroup)
 		self.parser.add_option_group(patterngroup)
 		
-		
-		if len(self.cfg_files) == 0:
+		if len(conf.cfg_files) == 0:
 			epilog = "No configuration file found. Default options: "
 			cfg = ''
 		else:
 			epilog  = "Default options from {cfg} are: "
 
-			if user_cfg in self.cfg_files:
+			if user_cfg in conf.cfg_files:
 				cfg = user_cfg
-			elif default_cfg in self.cfg_files:
+			elif default_cfg in conf.cfg_files:
 				cfg = default_cfg
 			else:
-				cfg = self.cfg_files[0]
+				cfg = conf.cfg_files[0]
 		
 		epilog += "{verbose}{ask}{dry}{move}{pattern} Target directory: {target}  "
 		epilog += "Rename pattern: {path}"	
 		
 		fmt = {'cfg': cfg,
-		'verbose': self.verbose and 'verbose, ' or '',
-		'ask': self.interactive and 'interactive, ' or '',
-		'dry': self.dryrun and '' or 'dry-run, ',
-		'move': self.move and 'move files, ' or '',
-		'pattern': self.pattern,
-		'target': self.target_dir or './',
-		'path': self.newpath
+		'verbose': conf.verbose and 'verbose, ' or '',
+		'ask': conf.interactive and 'interactive, ' or '',
+		'dry': conf.dryrun and '' or 'dry-run, ',
+		'move': conf.move and 'move files, ' or '',
+		'pattern': conf.pattern,
+		'target': conf.target_dir or './',
+		'path': conf.newpath
 		}
 		
 		epilog = epilog.format(**fmt)
-		
-		
 		self.parser.epilog = epilog
-	
 	
 	def help(self):
 		"""
@@ -211,27 +222,25 @@ class Configuration(object):
 		"""
 		self.parser.print_help()
 
-
-	def parseArguments(self, argv):
+	def parse(self, argv=sys.argv[1:]):
 		"""
-		Parse commandline and update options (attributes).
+		Parse commandline, update configuration and 
+		return non-option commandline arguments.
 		"""
-		
+		conf = Configuration()
 		(options, args) = self.parser.parse_args(argv)
 		
 		if options.conf:
-			self.cfg_files.extend(self.cfg.read(options.conf))
+			conf.cfg_files.extend(conf.cfg.read(options.conf))
 		
-		self.verbose     = options.verbose
-		self.target_dir  = options.target_dir
-		self.interactive = options.interactive
-		self.dryrun      = options.dryrun
-		self.move        = options.move
+		conf.verbose     = options.verbose
+		conf.target_dir  = options.target_dir
+		conf.interactive = options.interactive
+		conf.dryrun      = options.dryrun
+		conf.move        = options.move
 		
-		if self.pattern != options.pattern:
-			self.pattern = options.pattern
-			self._setupPattern()
+		if conf.pattern != options.pattern:
+			conf.pattern = options.pattern
+			conf._setupPattern()
 		
 		return args
-	
-		

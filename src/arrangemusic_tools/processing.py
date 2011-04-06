@@ -17,15 +17,15 @@ class TagInfo(object):
 	Loads tag information and prepares and processes it.
 	"""
 	
-	def __init__(self, tagfileref, options):
-		self.options   = options
+	def __init__(self, tagfileref):
+		self.options   = config.Configuration()
 		self.filename  = tagfileref.file().name()
 		self.extension = get_extension(self.filename, config.file_extensions)
 		
 		tag = tagfileref.tag()
-		self.artist = tag.artist or options.unk_artist
-		self.title  = tag.title  or options.unk_title
-		self.genre  = tag.genre  or options.no_genre
+		self.artist = tag.artist or self.options.unk_artist
+		self.title  = tag.title  or self.options.unk_title
+		self.genre  = tag.genre  or self.options.no_genre
 		self.album  = tag.album 
 		self.track  = tag.track
 		self.year   = tag.year
@@ -53,8 +53,8 @@ class TagInfo(object):
 		if self.year <= 0:
 			self.year = ''
 	
-		self.article, self.artist_noarticle = get_first(self.artist, options.common_articles)
-		if options.ignore_articles:
+		self.article, self.artist_noarticle = get_first(self.artist, self.options.common_articles)
+		if self.options.ignore_articles:
 			self.first_letter = self.artist_noarticle[0]
 		else:
 			self.first_letter = self.artist[0]
@@ -183,12 +183,12 @@ def file_listing(directory, extensions):
 	return results
 
 
-def process_file(source, options):
+def process_file(source):
 	"""
 	Copies or moves a file described by 'source' (TagInfo instance).
 	"""
+	options = config.Configuration()
 	do = not options.dryrun
-	
 	dest = source.makePath()
 	path = os.path.join(options.target_dir, dest)
 			
@@ -253,17 +253,17 @@ def print_overview(options):
 		print
 
 
-def run(argv, mktag, cfg=''):
+def run(argv, mktag):
 	"""
 	Parses 'argv', loads configuration and prepares source files.
-	Returns a Configuration instance and a list of TagInfo instances.
 	To instantiate TagInfo, 'mktag' is applied to the filename first.
 	"""
-	options = config.Configuration(cfg)
-	args    = options.parseArguments(argv)
+	options = config.Configuration()
+	parser  = config.CmdlineParser()
+	args    = parser.parse(argv)
 
 	if not args:
-		options.help()
+		parser.help()
 		sys.exit(1)
 	
 	print_overview(options)
@@ -273,11 +273,11 @@ def run(argv, mktag, cfg=''):
 		for f in args:
 			if os.path.isfile(f):
 				try:
-					source = TagInfo(mktag(f), options)
+					source = TagInfo(mktag(f))
 				except ValueError:
 					print "Filetype of %s not supported." % f
 				else:
-					process_file(source, options)
+					process_file(source)
 		
 			elif os.path.isdir(f):
 				args.extend(file_listing(f, config.file_extensions))
