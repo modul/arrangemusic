@@ -1,7 +1,8 @@
-README
 setup.py
 src/arrangemusic
 src/default.cfg
 src/arrangemusic_tools/__init__.py
 src/arrangemusic_tools/config.py
 src/arrangemusic_tools/processing.py
+src/arrangemusic_tools/singleton.py
+src/arrangemusic_tools/tools.py
