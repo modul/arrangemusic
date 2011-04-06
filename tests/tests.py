@@ -13,13 +13,13 @@ class TestConfig(unittest.TestCase):
 	def test_config_arg_parse(self):
 		options = config.Configuration()
 		options.read('test.cfg')
-		parser = config.CmdlineParser()
-		argv = ["-nm","-p","multi", "file"]
-		
+				
 		self.assertEqual(options.pattern, 'default')
 		self.assertFalse(options.dryrun)
 		self.assertFalse(options.move)
 				
+		parser = config.CmdlineParser()
+		argv = ["-nm","-p","multi", "file"]
 		files = parser.parse(argv)
 		self.assertEqual(options.pattern, 'multi')
 		self.assertTrue(options.dryrun)
@@ -39,7 +39,6 @@ class TestArrangeMusic(unittest.TestCase):
 		self.options.read('test.cfg')
 		self.tagm = TagPyFileRefMock("testfile.mp3")
 		self.tagm.settag(artist="test", title="file", track=0, year=2001, genre="", album="Test Case")
-		print self.options.pattern
 	
 	def test_tagInfo(self):
 		tagm = self.tagm

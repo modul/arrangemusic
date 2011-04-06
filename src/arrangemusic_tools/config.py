@@ -50,15 +50,17 @@ class _Configuration(Singleton):
 		self.unk_title    = "Unknown Title"
 		self.no_genre     = "No genre"
 		
-		self._setupPattern()
+		self.setupPattern()
 
-	def _setupPattern(self):
+	def setupPattern(self):
 		"""
 		Load rename pattern.
 		"""
 		pattern = self.pattern
 		if pattern == "internal":
 			pattern = "default"
+			if self.cfg.has_section(pattern):
+				self.pattern = "default"
 		
 		self.ignore_articles = False
 		self.common_articles = ['The']
@@ -122,8 +124,8 @@ class _Configuration(Singleton):
 			if self.cfg.has_option("replacements", "no-genre"):
 				self.no_genre = self.cfg.get("replacements", "no-genre")
 				
-			self._setupPattern()
-	
+			self.setupPattern()
+			
 Configuration = _Configuration.getInstance
 
 
@@ -235,7 +237,7 @@ class CmdlineParser(object):
 		(options, args) = self.parser.parse_args(argv)
 		
 		if options.conf:
-			conf.cfg_files.extend(conf.cfg.read(options.conf))
+			conf.read(options.conf)
 		
 		conf.verbose     = options.verbose
 		conf.target_dir  = options.target_dir
@@ -245,6 +247,6 @@ class CmdlineParser(object):
 		
 		if conf.pattern != options.pattern:
 			conf.pattern = options.pattern
-			conf._setupPattern()
+			conf.setupPattern()
 		
 		return args
