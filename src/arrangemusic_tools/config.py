@@ -44,7 +44,7 @@ class _Configuration(Singleton):
 		self.move         = False
 		self.interactive  = False
 		self.target_dir   = "./"
-		self.pattern      = "default"
+		self.pattern      = "internal"
 		self.replacements = {}
 		self.unk_artist   = "Unknown Artist"
 		self.unk_title    = "Unknown Title"
@@ -57,6 +57,8 @@ class _Configuration(Singleton):
 		Load rename pattern.
 		"""
 		pattern = self.pattern
+		if pattern == "internal":
+			pattern = "default"
 		
 		self.ignore_articles = False
 		self.common_articles = ['The']
@@ -119,6 +121,8 @@ class _Configuration(Singleton):
 				
 			if self.cfg.has_option("replacements", "no-genre"):
 				self.no_genre = self.cfg.get("replacements", "no-genre")
+				
+			self._setupPattern()
 	
 Configuration = _Configuration.getInstance
 
