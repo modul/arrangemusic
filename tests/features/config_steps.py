@@ -21,3 +21,5 @@ def check_config_option(step, opt, val):
 		val = False
 	assert getattr(world.conf,opt) == val, (opt, val)
 
+
+
