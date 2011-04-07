@@ -62,9 +62,9 @@ class Arranger(object):
 			self.first_letter = self.artist[0]
 		
 		if self.first_letter.isdigit():
-			if option.initial_num == "first":
+			if self.options.initial_num == "first":
 				pass
-			elif option.initial_num == "whole":
+			elif self.options.initial_num == "whole":
 				sp = self.artist_noarticle.split()
 				self.first_letter = sp[0]
 			else:
@@ -117,7 +117,7 @@ class Arranger(object):
 			'genre':  genre.encode('utf8'),
 			'year' :  self.year,
 			'initial'  : self.first_letter.encode('utf8'),
-			'extension': '.'+self.extension
+			'extension': '.'+self.extension.encode('utf8')
 		}
 		
 		try:
@@ -194,7 +194,7 @@ def print_overview():
 		print "Verbose (use -q to stop spam)" 
 	if options.move:
 		print "Removing source files (use -M to keep them)"
-	print "Using '{pat}' pattern (change with -p)".format(pat=options.pattern)
+	print "Using pattern '{pat}' (change with -p)".format(pat=options.pattern)
 	
 	print "Target directory:", options.target_dir, "(change with -t DIRECTORY)"
 	print "\033[0m"
