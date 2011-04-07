@@ -28,12 +28,13 @@ def test_config_is_singleton():
 
 def test_config_and_parser():
 	options = config.Configuration()
-	assert options.pattern == 'default'
-	assert  options.dryrun is False
+	assert options.pattern == 'default-pattern', options.pattern
+	assert options.dryrun is False
 	assert options.move is False
+	assert options.target_dir == './bla'
 			
 	parser = config.CmdlineParser()
-	argv = ["-nm","-p","multi", "file"]
+	argv = "-nm -p multi file".split()
 	files = parser.parse(argv)
 
 	assert options.pattern == 'multi'
@@ -41,26 +42,25 @@ def test_config_and_parser():
 	assert options.move is True
 	assert files == ['file']
 
-	argv = ['-c', '-p', 'internal']
+	argv = "-c -p internal".split()
 	files = parser.parse(argv)
 
-	assert options.pattern == 'default'
-	assert options.dryrun is False # option default
-	assert options.move is False
+	assert options.pattern == 'default-pattern'
+	assert options.dryrun is True # options not changed by argv
+	assert options.move is False  # option changed by argv   
 	assert files == []
 
-#def test_config_read_from_argument():
-#	argv = ['-f', 'test2.cfg']
-#	parser = config.CmdlineParser()
-#	options = config.Configuration()
-#	
-#	assert options.interactive is False
-#	parser.parse(argv)
-#	assert 'test2.cfg' in options.cfg_files, options.cfg_files
-#	assert options.interactive is True
-#	options.interactive = False
-#	assert options.interactive is False
+def test_config_read_from_argument():
+	argv = "-f test2.cfg".split()
+	parser = config.CmdlineParser()
+	options = config.Configuration()
 	
+	assert options.interactive is False
+	parser.parse(argv)
+	assert 'test2.cfg' in options.cfg_files, options.cfg_files
+	assert options.interactive is True
+	options.interactive = False
+	assert options.interactive is False
 
 def test_arranger_taghandling():
 	tagm = make_my_tag()
@@ -104,7 +104,7 @@ def test_file_listing():
 	assert './tests.pyc' not in listing
 
 def test_dryrun():
-	argv = ['-nv', './']
+	argv = ['-n', './']
 	gen = TagGenerator(artist='The Wall', album='Bricks', title=u'Who’s number {track}?')
 	processing.run(argv, gen.next)
 
