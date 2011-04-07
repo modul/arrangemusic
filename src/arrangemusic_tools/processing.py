@@ -62,9 +62,9 @@ class Arranger(object):
 			self.first_letter = self.artist[0]
 		
 		if self.first_letter.isdigit():
-			if option.initial_num == "first":
+			if self.options.initial_num == "first":
 				pass
-			elif option.initial_num == "whole":
+			elif self.options.initial_num == "whole":
 				sp = self.artist_noarticle.split()
 				self.first_letter = sp[0]
 			else:

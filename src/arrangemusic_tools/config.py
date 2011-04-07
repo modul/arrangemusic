@@ -89,9 +89,11 @@ class _Configuration(Singleton):
 		"""
 		Reads one or more additional configuration files and updates options.
 		"""
+		
 		for cfgfile in args:
 			if not cfgfile in self.cfg_files:
-				self.cfg_files.extend(self.cfg.read(cfgfile))
+				r = self.cfg.read(cfgfile)
+				self.cfg_files.extend(r)
 		
 		if len(self.cfg_files) > 0:
 			if self.cfg.has_option("commandline", "verbose"):

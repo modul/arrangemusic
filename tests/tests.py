@@ -49,6 +49,19 @@ def test_config_and_parser():
 	assert options.move is False
 	assert files == []
 
+#def test_config_read_from_argument():
+#	argv = ['-f', 'test2.cfg']
+#	parser = config.CmdlineParser()
+#	options = config.Configuration()
+#	
+#	assert options.interactive is False
+#	parser.parse(argv)
+#	assert 'test2.cfg' in options.cfg_files, options.cfg_files
+#	assert options.interactive is True
+#	options.interactive = False
+#	assert options.interactive is False
+	
+
 def test_arranger_taghandling():
 	tagm = make_my_tag()
 	tag = processing.Arranger(tagm)
@@ -69,7 +82,6 @@ def test_arranger_mkpath():
 	tagm = make_my_tag()
 	tag = processing.Arranger(tagm)
 	path = tag.makePath()
-	print path
 	assert path == "T/Test/2001-Test_Case/01.File.mp3"
 	
 	tagm.filename = "mh.fac"
