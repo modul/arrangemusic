@@ -37,8 +37,7 @@ class _Configuration(Singleton):
 		"""
 		self.cfg = ConfigParser()
 		self.cfg_files = []
-		self.read(default_cfg, user_cfg)
-		
+				
 		self.verbose      = False
 		self.dryrun       = True
 		self.move         = False
@@ -50,46 +49,19 @@ class _Configuration(Singleton):
 		self.unk_title    = "Unknown Title"
 		self.no_genre     = "No genre"
 		
-		self.setupPattern()
+		self.read(default_cfg, user_cfg)
 
-	def setupPattern(self):
+	def configHasPattern(self, pattern):
 		"""
-		Load rename pattern.
+		Checks if any of the read configuration files has a pattern section 
+		'pattern'.
 		"""
-		pattern = self.pattern
-		if pattern == "internal":
-			pattern = "default"
-			if self.cfg.has_section(pattern):
-				self.pattern = "default"
-		
-		self.ignore_articles = False
-		self.common_articles = ['The']
-		self.trackstyle  = "{track}."
-		self.albumstyle  = "{yearstyle}{album}"
-		self.yearstyle   = "{year}-"
-		self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}{extension}"
-		self.initial_num = "first"
-		
-		if self.cfg.has_option(pattern, "ignore-articles"):
-			self.ignore_articles = self.cfg.getboolean(pattern, "ignore-articles")
-		if self.cfg.has_option(pattern, "common-articles"):
-			self.common_articles = self.cfg.get(pattern, "common-articles").split(',')
-		if self.cfg.has_option(pattern, "trackstyle"):
-			self.trackstyle  = self.cfg.get(pattern, "trackstyle")
-		if self.cfg.has_option(pattern, "albumstyle"):
-			self.albumstyle  = self.cfg.get(pattern, "albumstyle")
-		if self.cfg.has_option(pattern, "yearstyle"):
-			self.yearstyle   = self.cfg.get(pattern, "yearstyle")
-		if self.cfg.has_option(pattern, "new-path"):
-			self.newpath     = self.cfg.get(pattern, "new-path")
-		if self.cfg.has_option(pattern, "initial-of-number"):
-			self.initial_num = self.cfg.get(pattern, "initial-of-number")
-		
+		return self.cfg.has_section(pattern)
+
 	def read(self, *args):
 		"""
 		Reads one or more additional configuration files and updates options.
 		"""
-		
 		for cfgfile in args:
 			if not cfgfile in self.cfg_files:
 				r = self.cfg.read(cfgfile)
@@ -127,6 +99,42 @@ class _Configuration(Singleton):
 				self.no_genre = self.cfg.get("replacements", "no-genre")
 				
 			self.setupPattern()
+		
+	def setupPattern(self):
+		"""
+		Load rename pattern.
+		"""
+
+		# When no pattern option in conf files, try this:
+		if self.pattern == "internal":
+			if self.configHasPattern("default-pattern"): 
+				self.pattern = "default-pattern"
+			else:	
+				# The internal settings:
+				self.ignore_articles = False
+				self.common_articles = ['The']
+				self.trackstyle  = "{track}."
+				self.albumstyle  = "{yearstyle}{album}"
+				self.yearstyle   = "{year}-"
+				self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}{extension}"
+				self.initial_num = "first"
+		
+		pattern = self.pattern
+		if self.cfg.has_option(pattern, "ignore-articles"):
+			self.ignore_articles = self.cfg.getboolean(pattern, "ignore-articles")
+		if self.cfg.has_option(pattern, "common-articles"):
+			self.common_articles = self.cfg.get(pattern, "common-articles").split(',')
+		if self.cfg.has_option(pattern, "trackstyle"):
+			self.trackstyle  = self.cfg.get(pattern, "trackstyle")
+		if self.cfg.has_option(pattern, "albumstyle"):
+			self.albumstyle  = self.cfg.get(pattern, "albumstyle")
+		if self.cfg.has_option(pattern, "yearstyle"):
+			self.yearstyle   = self.cfg.get(pattern, "yearstyle")
+		if self.cfg.has_option(pattern, "new-path"):
+			self.newpath     = self.cfg.get(pattern, "new-path")
+		if self.cfg.has_option(pattern, "initial-of-number"):
+			self.initial_num = self.cfg.get(pattern, "initial-of-number")
+		
 			
 Configuration = _Configuration.getInstance
 
@@ -156,40 +164,40 @@ class CmdlineParser(object):
 		
 		actiongroup.add_option("-i", "--interactive", 
 		  help="ask before doing anything", 
-		  action="store_true", dest="interactive", default=conf.interactive)
+		  action="store_true", dest="interactive", default=None)
 		actiongroup.add_option("-I", "--non-interactive", 
 		  help="don't ask",
-		  action="store_false", dest="interactive", default=conf.interactive)
+		  action="store_false", dest="interactive", default=None)
 		actiongroup.add_option("-n", "--dry-run", 
 		 help="just pretend actions",
-		 action="store_true", dest="dryrun", default=conf.dryrun)
+		 action="store_true", dest="dryrun", default=None)
 		actiongroup.add_option("-d", "--do-it", 
 		 help="don't pretend actions",
-		 action="store_false", dest="dryrun", default=conf.dryrun)
+		 action="store_false", dest="dryrun", default=None)
 		actiongroup.add_option("-v", "--verbose", 
 		 help="print more information",
-		 action="store_true", dest="verbose", default=conf.verbose)
+		 action="store_true", dest="verbose", default=None)
 		actiongroup.add_option("-q", "--quiet", 
 		 help="print less information",
-		 action="store_false", dest="verbose", default=conf.verbose)
+		 action="store_false", dest="verbose", default=None)
 		
 		targetgroup = optparse.OptionGroup(self.parser, "Target files")
 
 		targetgroup.add_option("-m", "--move", 
 		 help="move files (remove source files)",
-		 action="store_true", dest="move", default=conf.move)
+		 action="store_true", dest="move", default=None)
 		targetgroup.add_option("-c", "--copy", 
 		 help="copy files",
-		 action="store_false", dest="move", default=conf.move)
+		 action="store_false", dest="move", default=None)
 		targetgroup.add_option("-t", "--target", 
 		 help="move/copy files to DIRECTORY",
-		 metavar="DIRECTORY", dest="target_dir", default=conf.target_dir)
+		 metavar="DIRECTORY", dest="target_dir", default=None)
 		 
 		patterngroup = optparse.OptionGroup(self.parser, "Patterns")
 		
 		patterngroup.add_option("-p", "--pattern", 
 		 help="load PATTERN from configuration (other as default)",
-		 metavar="PATTERN", dest="pattern", default=conf.pattern)
+		 metavar="PATTERN", dest="pattern", default=None)
 				
 		self.parser.add_option_group(actiongroup)
 		self.parser.add_option_group(targetgroup)
@@ -208,14 +216,15 @@ class CmdlineParser(object):
 			else:
 				cfg = conf.cfg_files[0]
 		
-		epilog += "{verbose}{ask}{dry}{move}{pattern} Target directory: {target}  "
-		epilog += "Rename pattern: {path}"	
+		epilog += u"Options: {verbose}, {ask}, {dry}, {move} files."
+		epilog += u"Target directory: {target}."
+		epilog += u"Rename pattern 'pattern': {path}."	
 		
 		fmt = {'cfg': cfg,
-		'verbose': conf.verbose and 'verbose, ' or '',
-		'ask': conf.interactive and 'interactive, ' or '',
-		'dry': conf.dryrun and '' or 'dry-run, ',
-		'move': conf.move and 'move files, ' or '',
+		'verbose': conf.verbose and 'verbose' or 'quiet',
+		'ask': conf.interactive and 'interactive, ' or "don't ask",
+		'dry': conf.dryrun and 'do it' or 'dry-run, ',
+		'move': conf.move and 'move, ' or 'copy',
 		'pattern': conf.pattern,
 		'target': conf.target_dir or './',
 		'path': conf.newpath
@@ -238,16 +247,22 @@ class CmdlineParser(object):
 		conf = Configuration()
 		(options, args) = self.parser.parse_args(argv)
 		
+		# If another configuration was supplied, overwrite (partially) current one.
 		if options.conf:
 			conf.read(options.conf)
 		
-		conf.verbose     = options.verbose
-		conf.target_dir  = options.target_dir
-		conf.interactive = options.interactive
-		conf.dryrun      = options.dryrun
-		conf.move        = options.move
-		
-		if conf.pattern != options.pattern:
+		# Overwrite configuration only if option was supplied:
+		if options.verbose is not None: 
+			conf.verbose     = options.verbose
+		if options.target_dir is not None:
+			conf.target_dir  = options.target_dir
+		if options.interactive is not None:
+			conf.interactive = options.interactive
+		if options.dryrun is not None:
+			conf.dryrun      = options.dryrun
+		if options.move is not None:
+			conf.move        = options.move
+		if options.pattern is not None:
 			conf.pattern = options.pattern
 			conf.setupPattern()
 		
