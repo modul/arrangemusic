@@ -10,6 +10,7 @@ def setup():
 	assert os.path.isfile('test.cfg'), "Must be run inside tests/, where test.cfg lies"	
 	options = config.Configuration()
 	options.read('test.cfg')
+	assert options.target_dir == "./bla"
 
 def make_my_tag():
 	tagm = TagGenerator(artist="test", title="file", year=2001, genre="", album="Test Case").next("testfile.mp3")
