@@ -58,9 +58,15 @@ def test_config_read_from_argument():
 	assert options.interactive is False
 	parser.parse(argv)
 	assert 'test2.cfg' in options.cfg_files, options.cfg_files
-	assert options.interactive is True
-	options.interactive = False
-	assert options.interactive is False
+	assert options.interactive is True # from test2.cfg
+	
+	argv = "-I".split()
+	parser.parse(argv)
+	assert options.interactive is False# should be changed back
+	
+	argv = "-I -f test2.cfg".split()
+	parser.parse(argv)
+	assert options.interactive is False# test2.cfg option must be overwritten by -I
 
 def test_arranger_taghandling():
 	tagm = make_my_tag()
