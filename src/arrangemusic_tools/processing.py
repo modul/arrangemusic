@@ -159,7 +159,8 @@ class Arranger(object):
 			print "DIR    :", os.path.dirname(path)
 			print "FILE   : %s -> %s\n" % (self.filename, os.path.basename(path))
 		
-		print os.path.basename(self.filename), "->\033[32m", dest, "\033[0m"
+		print os.path.basename(self.filename), 
+		print "->\033[32m TARGET/%s \033[0m" % dest
 		
 		if do \
 		  and self.options.interactive \
@@ -200,7 +201,7 @@ def print_overview():
 	if options.verbose:
 		print "Verbose (use -q to stop spam)" 
 	if options.move:
-		print "Removing source files (use -M to keep them)"
+		print "Removing source files (use -c to keep them)"
 	print "Using pattern '{pat}' (change with -p)".format(pat=options.pattern)
 	
 	print "Target directory:", options.target_dir, "(change with -t DIRECTORY)"
