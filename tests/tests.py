@@ -10,6 +10,7 @@ def setup():
 	assert os.path.isfile('test.cfg'), "Must be run inside tests/, where test.cfg lies"	
 	options = config.Configuration()
 	options.read('test.cfg')
+	assert options.target_dir == "./bla"
 
 def make_my_tag():
 	tagm = TagGenerator(artist="test", title="file", year=2001, genre="", album="Test Case").next("testfile.mp3")
@@ -58,15 +59,9 @@ def test_config_read_from_argument():
 	assert options.interactive is False
 	parser.parse(argv)
 	assert 'test2.cfg' in options.cfg_files, options.cfg_files
-	assert options.interactive is True # from test2.cfg
-	
-	argv = "-I".split()
-	parser.parse(argv)
-	assert options.interactive is False# should be changed back
-	
-	argv = "-I -f test2.cfg".split()
-	parser.parse(argv)
-	assert options.interactive is False# test2.cfg option must be overwritten by -I
+	assert options.interactive is True
+	options.interactive = False
+	assert options.interactive is False
 
 def test_arranger_taghandling():
 	tagm = make_my_tag()
@@ -94,7 +89,7 @@ def test_arranger_mkpath():
 	tagm.settag(title="whatever you want", track=5, artist="Test")
 	tag = processing.Arranger(tagm)
 	path = tag.makePath()
-	assert path == "T/Test//05.Whatever_You_Want."
+	assert path == ""
 	
 	tagm.filename = u"höher.mp3"
 	tagm.settag(title=u"Höher…", track=0, artist=u"Pilot", album=u"Über den Wolken")

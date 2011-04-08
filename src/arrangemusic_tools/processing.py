@@ -89,6 +89,9 @@ class Arranger(object):
 		"""
 		Perform pattern substitutions and construct a new file path.
 		"""
+		if self.extension == '':
+			return ''
+			
 		artist = replace(self.artist, self.options.replacements)
 		title  = replace(self.title, self.options.replacements)
 		genre  = replace(self.genre, self.options.replacements)
@@ -137,6 +140,10 @@ class Arranger(object):
 		"""
 		Copies or moves the file.
 		"""
+		if self.extension == '':
+			print "Unacceptable file extension", self.filename
+			return 
+			
 		options = config.Configuration()
 		do = not self.options.dryrun
 		dest = self.makePath()
