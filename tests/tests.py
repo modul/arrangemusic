@@ -89,7 +89,7 @@ def test_arranger_mkpath():
 	tagm.settag(title="whatever you want", track=5, artist="Test")
 	tag = processing.Arranger(tagm)
 	path = tag.makePath()
-	assert path == "T/Test//05.Whatever_You_Want."
+	assert path == ""
 	
 	tagm.filename = u"höher.mp3"
 	tagm.settag(title=u"Höher…", track=0, artist=u"Pilot", album=u"Über den Wolken")
