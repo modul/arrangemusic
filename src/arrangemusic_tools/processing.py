@@ -159,7 +159,9 @@ class Arranger(object):
 			print "DIR    :", os.path.dirname(path)
 			print "FILE   : %s -> %s\n" % (self.filename, os.path.basename(path))
 		
-		print os.path.basename(self.filename), 
+		if not do:
+			print "Pretending:", 
+		print os.path.basename(self.filename)
 		print "->\033[32m TARGET/%s \033[0m" % dest
 		
 		if do \
