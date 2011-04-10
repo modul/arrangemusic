@@ -183,9 +183,7 @@ class Arranger(object):
 					shutil.move(self.filename, path)
 				else:
 					shutil.copy(self.filename, path)
-		else: 
-			print "Not done."
-			
+
 
 def print_overview():
 	"""
