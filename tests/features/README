@@ -1,4 +1,7 @@
 This is just for fun ;)
 
 Note: can't run all features at once (because of how configuration behaves), instead:
-	lettuce features/config.feature
+	lettuce features/config.feature 
+	lettuce features/cmdline_parser.feature
+
+
