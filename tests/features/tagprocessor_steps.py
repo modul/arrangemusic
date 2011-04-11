@@ -2,11 +2,11 @@
 from lettuce import *
 
 from mock import *
-from arrangemusic_tools import config, processing
+from arrangemusic_tools import configuration, arranger
 
 @step(u'Given I have the configuration from "(.*)"')
 def configuration_from_filename(step, filename):
-	conf = config.Configuration()
+	conf = configuration.Configuration()
 	conf.read(filename)
     
 @step(u'And I have a file "(.*)"')
@@ -23,7 +23,7 @@ def settag(step):
 
 @step(u'When I load Arranger with it')
 def load_arranger(step):
-	world.arr = processing.Arranger(world.tag)
+	world.arr = arranger.Arranger(world.tag)
     
 @step(u'Then it should construct "(.*)"')
 def construct_the_path(step, expected):

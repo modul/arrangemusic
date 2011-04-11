@@ -1,3 +1,3 @@
-from arrangemusic_tools import config
+from arrangemusic_tools import configuration
 
-config.CmdlineParser().help()
+configuration.CmdlineParser().help()

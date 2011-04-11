@@ -14,9 +14,6 @@ import sys
 import optparse
 from ConfigParser import ConfigParser
 
-from singleton import Singleton
- 
- 
 version = "v0.4.1"
 
 file_extensions = ["mp3", "ogg", "flac"]
@@ -25,11 +22,17 @@ user_cfg = os.path.expanduser("~/.arrangemusic.cfg")
 default_cfg = "/usr/local/share/arrangemusic/default.cfg"
 
 
-class _Configuration(Singleton):
+class _Configuration(object):
 	"""
 	Loads configuration file(s) and acts as a simple options container.
-	Do not instantiate this class, use Configuration() instead.
+	This is (kind of) a singleton class. It implements a getInstance method 
+	which returns a unique object.
+	
+	It uses a little trick to prevent __init__ from getting called twice:
+	Use Configuration() to instantiate this class, this is a shortcut to
+	_Configuration.getInstance().
 	"""
+	__instance = None
 	
 	def __init__(self):
 		"""
@@ -50,6 +53,12 @@ class _Configuration(Singleton):
 		self.no_genre     = "No genre"
 		
 		self.read(default_cfg, user_cfg)
+
+	@classmethod
+	def getInstance(cls, *args, **kwargs):
+		if cls.__instance is None:
+			cls.__instance = cls(*args, **kwargs)
+		return cls.__instance
 
 	def configHasPattern(self, pattern):
 		"""

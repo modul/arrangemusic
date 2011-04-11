@@ -1,17 +1,17 @@
 # -*- coding: utf8 -*-
 #
-# Arrangemusic - processing.py
+# Arrangemusic - arranger.py
 #
-# Everything that’s needed to process tags and files is here.
+# Arranger does most of the work. 
+# Processes the tag and generates a new file path.
 #
 # author: Remo Giermann <mo@liberejo.de>
 # created: 2011/04/04
 #
 
 import sys, os, shutil
-import config
-
 from tools import *
+from configuration import *
 
 
 class Arranger(object):
@@ -20,9 +20,9 @@ class Arranger(object):
 	"""
 	
 	def __init__(self, tagfileref):
-		self.options   = config.Configuration()
+		self.options   = Configuration()
 		self.filename  = tagfileref.file().name()
-		self.extension = get_extension(self.filename, config.file_extensions)
+		self.extension = get_extension(self.filename, file_extensions)
 		
 		tag = tagfileref.tag()
 		self.theartist = tag.artist or self.options.unk_artist
@@ -142,7 +142,7 @@ class Arranger(object):
 			print "Unacceptable file extension", self.filename
 			return 
 			
-		options = config.Configuration()
+		options = Configuration()
 		do = not self.options.dryrun
 		dest = self.makePath()
 		path = os.path.join(self.options.target_dir, dest)
@@ -183,43 +183,13 @@ class Arranger(object):
 					shutil.copy(self.filename, path)
 
 
-def print_overview():
-	"""
-	Prints options and configuration.
-	"""
-	options = config.Configuration()
-	print "\033[33m"
-
-	if len(options.cfg_files) == 0:
-		print "No configuration (use -f to supply one)"
-	if options.dryrun:
-		print "Dry-run (just pretending, use -d to overwrite)"
-	if options.interactive: 
-		print "Interactive (use -I to don't get asked on each file)"
-	if options.verbose:
-		print "Verbose (use -q to stop spam)" 
-	if options.move:
-		print "Removing source files (use -c to keep them)"
-	print "Using pattern '{pat}' (change with -p)".format(pat=options.pattern)
-	
-	print "Target directory:", options.target_dir, "(change with -t DIRECTORY)"
-	print "\033[0m"
-	
-	if options.verbose:
-		print "FILE PATTERN  :", options.newpath
-		print "TRACK PATTERN :", options.trackstyle
-		print "YEAR PATTERN  :", options.yearstyle
-		print "ALBUM PATTERN  :", options.albumstyle
-		print
-
-
 def run(argv, mktag):
 	"""
 	Parses 'argv', updates configuration and prepares source files.
 	To instantiate Arranger, 'mktag' is applied to the filename first.
 	"""
-	options = config.Configuration()
-	parser  = config.CmdlineParser()
+	options = Configuration()
+	parser  = CmdlineParser()
 	args    = parser.parse(argv)
 
 	if not args:
@@ -240,10 +210,9 @@ def run(argv, mktag):
 					arranger.run()
 		
 			elif os.path.isdir(f):
-				args.extend(file_listing(f, config.file_extensions))
+				args.extend(file_listing(f, file_extensions))
 			else:
 				print "No such file", f
 				
 	except KeyboardInterrupt:
 		print 'Quit.'
-	

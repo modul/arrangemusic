@@ -3,12 +3,12 @@
 import os
 import shutil
 
-from arrangemusic_tools import processing, config
+from arrangemusic_tools import arranger, configuration, tools
 from mock import *
 
 def setup():
 	assert os.path.isfile('test.cfg'), "Must be run inside tests/, where test.cfg lies"	
-	options = config.Configuration()
+	options = configuration.Configuration()
 	options.read('test.cfg')
 	assert options.target_dir == "./bla"
 
@@ -17,24 +17,24 @@ def make_my_tag():
 	return tagm
 
 def test_config_is_singleton():
-	a = config.Configuration()
-	b = config.Configuration()
+	a = configuration.Configuration()
+	b = configuration.Configuration()
 	sth = a.interactive
 	assert id(a) == id(b)
 	b.interactive = not sth
 	del a, b
-	c = config.Configuration()
+	c = configuration.Configuration()
 	assert c.interactive is not sth
 	c.interactive = sth
 
 def test_config_and_parser():
-	options = config.Configuration()
+	options = configuration.Configuration()
 	assert options.pattern == 'default-pattern', options.pattern
 	assert options.dryrun is False
 	assert options.move is False
 	assert options.target_dir == './bla'
 			
-	parser = config.CmdlineParser()
+	parser = configuration.CmdlineParser()
 	argv = "-nm -p multi file".split()
 	files = parser.parse(argv)
 
@@ -53,8 +53,8 @@ def test_config_and_parser():
 
 def test_config_read_from_argument():
 	argv = "-f test2.cfg".split()
-	parser = config.CmdlineParser()
-	options = config.Configuration()
+	parser = configuration.CmdlineParser()
+	options = configuration.Configuration()
 	
 	assert options.interactive is False
 	parser.parse(argv)
@@ -65,7 +65,7 @@ def test_config_read_from_argument():
 
 def test_arranger_taghandling():
 	tagm = make_my_tag()
-	tag = processing.Arranger(tagm)
+	tag = arranger.Arranger(tagm)
 	assert tag.theartist == 'Test'
 	assert tag.title == 'File'
 	assert tag.track == '01'
@@ -76,30 +76,30 @@ def test_arranger_taghandling():
 	assert tag.extension == 'mp3'
 	
 	tagm.settag(year=0)
-	tag = processing.Arranger(tagm)
+	tag = arranger.Arranger(tagm)
 	assert tag.year == ''
 
 def test_arranger_mkpath():
 	tagm = make_my_tag()
-	tag = processing.Arranger(tagm)
+	tag = arranger.Arranger(tagm)
 	path = tag.makePath()
 	assert path == "T/Test/2001-Test_Case/01.File.mp3", path
 	
 	tagm.filename = "mh.fac"
 	tagm.settag(title="whatever you want", track=5, artist="Test")
-	tag = processing.Arranger(tagm)
+	tag = arranger.Arranger(tagm)
 	path = tag.makePath()
 	assert path == ""
 	
 	tagm.filename = u"höher.mp3"
 	tagm.settag(title=u"Höher…", track=0, artist=u"Pilot", album=u"Über den Wolken")
-	tag = processing.Arranger(tagm)
+	tag = arranger.Arranger(tagm)
 	path = tag.makePath()
 	assert path == "P/Pilot/Über_Den_Wolken/Höher….mp3"
 	
 def test_file_listing():
 	exts = ['.py']
-	listing = processing.file_listing('.', exts)
+	listing = tools.file_listing('.', exts)
 	assert './mock.py' in listing
 	assert './tests.py' in listing
 	assert './tests.pyc' not in listing
@@ -107,16 +107,16 @@ def test_file_listing():
 def test_dryrun():
 	argv = ['-n', './']
 	gen = TagGenerator(artist='The Wall', album='Bricks', title=u'Who’s number {track}?')
-	processing.run(argv, gen.next)
+	arranger.run(argv, gen.next)
 
 def test_run_virtualmusic():
 	argv = ['-vcd', '-t', 'virtualmusic', './']
 	gen = TagGenerator(artist='The Wall', album='Bricks', title=u'Who’s number {track}?')
-	processing.run(argv, gen.next)
+	arranger.run(argv, gen.next)
 	assert os.path.isdir('virtualmusic/W/') is True
 
 def test_no_wmafiles():
-	listing = processing.file_listing('virtualmusic/W', ['wma'])
+	listing = tools.file_listing('virtualmusic/W', ['wma'])
 	assert listing == []
 
 def teardown():
