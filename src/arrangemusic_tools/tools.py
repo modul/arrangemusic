@@ -23,7 +23,7 @@ def get_extension(filename, extensions):
 	''
 	"""
 	for ext in extensions:
-		if filename[-len(ext):].lower() == ext.lower():
+		if filename.lower().endswith(ext.lower()):
 			return ext
 	return ''
 
@@ -42,9 +42,7 @@ def replace(s, replacements):
 
 
 def file_listing(directory, extensions):
-	"""
-	Return a listing of files with 'extensions'.
-	"""
+	""" Return a listing of files with 'extensions'. """
 	results = []
 	for dirpath, dirs, files in os.walk(directory):
 		for f in files:
@@ -55,7 +53,7 @@ def file_listing(directory, extensions):
 
 def get_first(s, matches):
 	"""
-	If the first word of 's' is in 'matches' it returns a tuple with that match
+	If the first word of 's' is in 'matches' it returns a tuple with the match
 	and the rest of 's'.
 	
 	>>> get_first("The World", ['The'])
@@ -64,11 +62,13 @@ def get_first(s, matches):
 	('', 'Hello World')
 	>>> get_first("Hello", [])
 	('', 'Hello')
+	>>> get_first("the answer", ['The'])
+	('the', 'answer')
+	>>> get_first("hello", ['hello'])
+	('', 'hello')
 	"""
-	
-	sp = s.split()
-	if len(sp) > 1:
-		if sp[0] in matches:
-			return (sp[0], ' '.join(sp[1:]))
-	
-	return ('', s)
+	words = s.split()
+	if len(words) > 1 and words[0].lower() in (x.lower() for x in matches):
+		return (words[0], ' '.join(words[1:]))
+	else:
+		return ('', s)
