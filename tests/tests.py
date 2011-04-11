@@ -97,6 +97,15 @@ def test_arranger_mkpath():
 	path = tag.makePath()
 	assert path == "P/Pilot/Über_Den_Wolken/Höher….mp3"
 	
+	tagm.filename = "article test.ogg"
+	tagm.settag(title="Foo bar", track=1, artist="Die sieben weltwunder", album="")
+	options = configuration.Configuration()
+	pat = options.newpath
+	options.newpath = "{initial}/{artist},_{article}/{albumstyle}/{trackstyle}{title}"
+	path = arranger.Arranger(tagm).makePath()
+	assert path == "S/Sieben_Weltwunder,_Die//01.Foo_Bar.ogg", path
+	options.newpath = pat
+
 def test_file_listing():
 	exts = ['.py']
 	listing = tools.file_listing('.', exts)

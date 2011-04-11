@@ -112,6 +112,7 @@ class Arranger(object):
 		
 		subst = {
 			'theartist': theartist.encode('utf8'),
+			'article': self.article.encode('utf8'),
 			'artist': artist.encode('utf8'),
 			'album':  album.encode('utf8'),
 			'title':  title.encode('utf8'),
