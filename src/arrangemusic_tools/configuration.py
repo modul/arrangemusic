@@ -29,7 +29,7 @@ class _Configuration(object):
 	which returns a unique object.
 	
 	It uses a little trick to prevent __init__ from getting called twice:
-	Use Configuration() to instantiate this class, this is a shortcut to
+	Use Configuration() to instantiate this class, that‘s a shortcut to
 	_Configuration.getInstance().
 	"""
 	__instance = None
