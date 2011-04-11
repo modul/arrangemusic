@@ -25,22 +25,22 @@ class Arranger(object):
 		self.extension = get_extension(self.filename, config.file_extensions)
 		
 		tag = tagfileref.tag()
-		self.artist = tag.artist or self.options.unk_artist
+		self.theartist = tag.artist or self.options.unk_artist
 		self.title  = tag.title  or self.options.unk_title
 		self.genre  = tag.genre  or self.options.no_genre
 		self.album  = tag.album 
 		self.track  = tag.track
 		self.year   = tag.year
 		
-		self.old_artist = self.artist
+		self.old_artist = self.theartist
 		self.old_title  = self.title
 		self.old_genre  = self.genre
 		self.old_album  = self.album
 		self.old_track  = self.track
 		self.old_year   = self.year
 		
-		if not self.artist.isupper():     # leave uppercase strings as they are (e.g. ABBA)
-			self.artist = self.artist.title()  # or convert 'bad religion' to 'Bad Religion'
+		if not self.theartist.isupper():     # leave uppercase strings as they are (e.g. ABBA)
+			self.theartist = self.theartist.title()  # or convert 'bad religion' to 'Bad Religion'
 		if not self.title.isupper():
 			self.title  = self.title.title()
 		if not self.genre.isupper():
@@ -55,17 +55,14 @@ class Arranger(object):
 		if self.year <= 0:
 			self.year = ''
 	
-		self.article, self.artist_noarticle = get_first(self.artist, self.options.common_articles)
-		if self.options.ignore_articles:
-			self.first_letter = self.artist_noarticle[0]
-		else:
-			self.first_letter = self.artist[0]
-		
+		self.article, self.artist = get_first(self.theartist, self.options.common_articles)
+		self.first_letter = self.artist[0]
+				
 		if self.first_letter.isdigit():
 			if self.options.initial_num == "first":
 				pass
 			elif self.options.initial_num == "whole":
-				sp = self.artist_noarticle.split()
+				sp = self.artist.split()
 				self.first_letter = sp[0]
 			else:
 				self.first_letter = c
@@ -92,6 +89,7 @@ class Arranger(object):
 		if self.extension == '':
 			return ''
 			
+		theartist = replace(self.theartist, self.options.replacements)
 		artist = replace(self.artist, self.options.replacements)
 		title  = replace(self.title, self.options.replacements)
 		genre  = replace(self.genre, self.options.replacements)
@@ -113,6 +111,7 @@ class Arranger(object):
 		path = self.options.newpath
 		
 		subst = {
+			'theartist': theartist.encode('utf8'),
 			'artist': artist.encode('utf8'),
 			'album':  album.encode('utf8'),
 			'title':  title.encode('utf8'),
@@ -120,7 +119,6 @@ class Arranger(object):
 			'genre':  genre.encode('utf8'),
 			'year' :  self.year,
 			'initial'  : self.first_letter.encode('utf8'),
-			'extension': '.'+self.extension.encode('utf8')
 		}
 		
 		try:
@@ -134,7 +132,7 @@ class Arranger(object):
 			print "Error in pattern: {0} referenced before assigned".format(key)
 			return ''
 		else:
-			return path
+			return path+'.'+self.extension
 			
 	def run(self):
 		"""
@@ -150,7 +148,7 @@ class Arranger(object):
 		path = os.path.join(self.options.target_dir, dest)
 				
 		if self.options.verbose:	
-			print "\nARTIST : %s -> %s" % (self.old_artist, self.artist)
+			print "\nARTIST : %s -> %s" % (self.old_artist, self.theartist)
 			print "ALBUM  : %s -> %s" % (self.old_album, self.album)
 			print "TITLE  : %s -> %s" % (self.old_title, self.title)
 			print "GENRE  : %s -> %s" % (self.old_genre, self.genre)

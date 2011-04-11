@@ -66,7 +66,7 @@ def test_config_read_from_argument():
 def test_arranger_taghandling():
 	tagm = make_my_tag()
 	tag = processing.Arranger(tagm)
-	assert tag.artist == 'Test'
+	assert tag.theartist == 'Test'
 	assert tag.title == 'File'
 	assert tag.track == '01'
 	assert tag.year == 2001
@@ -83,7 +83,7 @@ def test_arranger_mkpath():
 	tagm = make_my_tag()
 	tag = processing.Arranger(tagm)
 	path = tag.makePath()
-	assert path == "T/Test/2001-Test_Case/01.File.mp3"
+	assert path == "T/Test/2001-Test_Case/01.File.mp3", path
 	
 	tagm.filename = "mh.fac"
 	tagm.settag(title="whatever you want", track=5, artist="Test")

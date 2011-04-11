@@ -110,19 +110,16 @@ class _Configuration(Singleton):
 			else:	
 				# The internal settings:
 				
-				self.ignore_articles = False
 				self.common_articles = ['The']
 				self.trackstyle  = "{track}."
 				self.albumstyle  = "{yearstyle}{album}"
 				self.yearstyle   = "{year}-"
-				self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}{extension}"
+				self.newpath     = "{artist}/{albumstyle}/{trackstyle}{title}"
 				self.initial_num = "first"
 		
 		pattern = self.pattern
-		if self.cfg.has_option(pattern, "ignore-articles"):
-			self.ignore_articles = self.cfg.getboolean(pattern, "ignore-articles")
 		if self.cfg.has_option(pattern, "common-articles"):
-			self.common_articles = self.cfg.get(pattern, "common-articles").split(',')
+			self.common_articles = self.cfg.get(pattern, "common-articles").split()
 		if self.cfg.has_option(pattern, "trackstyle"):
 			self.trackstyle  = self.cfg.get(pattern, "trackstyle")
 		if self.cfg.has_option(pattern, "albumstyle"):
