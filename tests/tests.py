@@ -3,7 +3,7 @@
 import os
 import shutil
 
-from arrangemusic_tools import arranger, configuration, tools
+from ArrangeMusic import arranger, configuration, tools
 from mock import *
 
 def setup():

@@ -1,5 +1,5 @@
 from lettuce import *
-from arrangemusic_tools import configuration
+from ArrangeMusic import configuration
 
 def tobool(s):
 	if s.lower() == 'true':

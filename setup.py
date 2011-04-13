@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(name='arrangemusic',
       version='0.4.1',
-      description='arrangemusic',
+      description='Arrange Music',
       long_description="""Create hierarchical directory/file structures of music files, based on tag information.""",
       author='Remo Giermann',
       author_email='mo@liberejo.de',
@@ -12,7 +12,7 @@ setup(name='arrangemusic',
       platforms=['all'],
 
 	  package_dir={'':'src'},
-	  packages=['arrangemusic_tools'],
+	  packages=['ArrangeMusic'],
       scripts=['src/arrangemusic'],
       data_files=[('share/arrangemusic/', ['src/default.cfg'])],
       )

@@ -2,7 +2,7 @@
 from lettuce import *
 
 from mock import *
-from arrangemusic_tools import configuration, arranger
+from ArrangeMusic import configuration, arranger
 
 @step(u'Given I have the configuration from "(.*)"')
 def configuration_from_filename(step, filename):

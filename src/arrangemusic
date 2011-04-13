@@ -14,6 +14,6 @@
 
 import os, sys
 import tagpy
-from arrangemusic_tools.arranger import run
+from ArrangeMusic.arranger import run
 
 run(sys.argv[1:], tagpy.FileRef)
