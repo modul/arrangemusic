@@ -1,7 +1,7 @@
 setup.py
 src/arrangemusic
 src/default.cfg
-src/arrangemusic_tools/__init__.py
-src/arrangemusic_tools/arranger.py
-src/arrangemusic_tools/configuration.py
-src/arrangemusic_tools/tools.py
+src/ArrangeMusic/__init__.py
+src/ArrangeMusic/arranger.py
+src/ArrangeMusic/configuration.py
+src/ArrangeMusic/tools.py
