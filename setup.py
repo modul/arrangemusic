@@ -3,7 +3,7 @@ import os
 import pickle
 from distutils.core import setup
 
-version = pickle.load(open('src/ArrangeMusic/version.pkl'))['version']
+version = open('src/ArrangeMusic/version').readline()[:-1].split('-')[0]
 
 
 # Setup script
@@ -19,7 +19,7 @@ setup(name='arrangemusic',
       platforms=['all'],
 
 	  package_dir={'':'src'},
-	  package_data={'ArrangeMusic':['version.pkl']},
+	  package_data={'ArrangeMusic':['version']},
 	  packages=['ArrangeMusic'],
       scripts=['src/arrangemusic'],
       data_files=[('share/arrangemusic/', ['src/default.cfg'])],

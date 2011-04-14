@@ -1,6 +1,3 @@
 import os
 import pickle
-
-v = pickle.load(open(os.path.join(os.path.dirname(__file__), 'version.pkl')))
-__version__ = v['version']
-__revision__ = v['revision']
+__version__ = '-'.join(open(os.path.join(os.path.dirname(__file__), 'version')).readline()[:-1].split('-')[:2])
