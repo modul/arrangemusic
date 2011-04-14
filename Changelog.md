@@ -1,3 +1,14 @@
+2011/04/13 v0.4.2
+
+* Improved configuration code and changed some options, removed ignore-articles (always done)
+* Default pattern section in configuration is 'default-pattern', when it exists
+* Added {artist}, {article}, {theartist} and removed {extension}
+* Returning no path on unknown file extension
+* Renamed modules, package and rearranged code
+* Some minor improvements to output and code in general
+* Using nosetests and lettuce (for fun)
+* Using version info derived from git tags and commit count (git describe)
+
 2011/04/06 v0.4.1
 
 * some code updates and fixes
