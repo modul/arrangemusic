@@ -1,7 +1,7 @@
 (dp0
 S'commit'
 p1
-S'gd0e2'
+S'gb33f'
 p2
 sS'version'
 p3
@@ -13,6 +13,6 @@ S'dirty'
 p6
 sS'revision'
 p7
-S'38'
+S'39'
 p8
 s.
