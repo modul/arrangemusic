@@ -23,6 +23,7 @@ setup(name='arrangemusic',
       platforms=['all'],
 
 	  package_dir={'':'src'},
+	  package_data={'ArrangeMusic':['version.pkl']},
 	  packages=['ArrangeMusic'],
       scripts=['src/arrangemusic'],
       data_files=[('share/arrangemusic/', ['src/default.cfg'])],

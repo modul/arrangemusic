@@ -5,3 +5,4 @@ src/ArrangeMusic/__init__.py
 src/ArrangeMusic/arranger.py
 src/ArrangeMusic/configuration.py
 src/ArrangeMusic/tools.py
+src/ArrangeMusic/version.pkl
