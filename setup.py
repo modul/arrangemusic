@@ -1,7 +1,18 @@
+import sys
+import os
+import pickle
 from distutils.core import setup
 
+versionfile = 'src/ArrangeMusic/version.pkl'
+if os.path.isfile(versionfile):
+	versioninfo = pickle.load(open('src/ArrangeMusic/version.pkl'))
+else:
+	versioninfo = {'version': 0}
+
+
+# Setup script
 setup(name='arrangemusic',
-      version='0.4.1',
+      version=versioninfo['version'],
       description='Arrange Music',
       long_description="""Create hierarchical directory/file structures of music files, based on tag information.""",
       author='Remo Giermann',

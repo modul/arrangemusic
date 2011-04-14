@@ -8,13 +8,15 @@
 # author: Remo Giermann <mo@liberejo.de>
 # created: 2010/04/04
 #
- 
+
 import os
 import sys
 import optparse
 from ConfigParser import ConfigParser
 
-version = "v0.4.1"
+from . import __versioninfo__
+
+version = ((__versioninfo__['version'], __versioninfo__['revision']))
 
 file_extensions = ["mp3", "ogg", "flac"]
  
@@ -150,7 +152,7 @@ class CmdlineParser(object):
 	
 	def __init__(self):
 		usage = "%prog [options] soure files/source directories ..."
-		versn = "%prog "+version
+		versn = "%prog "+'-'.join(version)
 		
 		self.parser = optparse.OptionParser(usage=usage, version=versn)
 		self._setupOptions()
