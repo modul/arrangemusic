@@ -84,6 +84,14 @@ def test_arranger_mkpath():
 	tag = arranger.Arranger(tagm)
 	path = tag.makePath()
 	assert path == "T/Test/2001-Test_Case/01.File.mp3", path
+
+	tagm = make_my_tag()
+	tagm.settag(artist="666 Tests", year=2001, album="Test case", track=1, title="6th test")
+	tagm.filename="test.ogg"
+	tag = arranger.Arranger(tagm)
+	path = tag.makePath()
+	assert path == "0-9/666_Tests/2001-Test_Case/01.6Th_Test.ogg", path
+
 	
 	tagm.filename = "mh.fac"
 	tagm.settag(title="whatever you want", track=5, artist="Test")
