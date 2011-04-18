@@ -65,7 +65,7 @@ class Arranger(object):
 				sp = self.artist.split()
 				self.first_letter = sp[0]
 			else:
-				self.first_letter = c
+				self.first_letter = self.options.initial_num
 	
 	def __ask_yesno(self, question, default=False):
 		"""
