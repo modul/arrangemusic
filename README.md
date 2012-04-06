@@ -1,5 +1,10 @@
 Arrangemusic
 ============
+I actually don’t use this anymore and the whole rewrite action (some time ago) 
+was more or less for fun with pythonic software development and testing.
+
+Description
+-----------
 Creates hierarchical directory structure of music files based on tag information.
 
 This script takes an audio file or a whole directory of those, renames them and creates a directory structure 
